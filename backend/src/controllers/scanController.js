@@ -2,7 +2,6 @@
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const crxToZip = require("../utils/crxToZip");
 
 const tryDownload = async (urls, outputPath) => {
   for (const url of urls) {
@@ -55,7 +54,7 @@ const scanByUrl = async (req, res) => {
     }
 
     // Convert CRX → ZIP → Extract manifest
-    let zipBuffer;
+    let zipBuffer=null;
     try {
       zipBuffer = crxToZip(crxPath);
     } catch (err) {
