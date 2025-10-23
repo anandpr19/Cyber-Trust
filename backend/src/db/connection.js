@@ -1,7 +1,6 @@
-// src/db/connection.js
 const mongoose = require('mongoose');
 
-const MONGO_URI = 'mongodb+srv://anandpr19:ANAND1909@cluster0.slxbfek.mongodb.net/';
+const MONGO_URI = process.env.MONGO_URI;
 
 function connect() {
   mongoose.set('strictQuery', false);

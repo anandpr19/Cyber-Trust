@@ -54,7 +54,7 @@ const scanByUrl = async (req, res) => {
     }
 
     // Convert CRX → ZIP → Extract manifest
-    let zipBuffer=null;
+    let zipBuffer=null; // temporary fall-back for eliminating crxToZip file from the utils folder , else remove null.
     try {
       zipBuffer = crxToZip(crxPath);
     } catch (err) {
