@@ -1,7 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
 const scanRoutes = require('./routes/scanRoutes');
-const uploadRoutes = require('./routes/uploadRoutes')
 const app = express();
 
 app.use(morgan('dev'));
@@ -9,7 +8,13 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/scan', scanRoutes);
-app.use('/api/upload',uploadRoutes);
+
+
+app.post('/api/ping', (req, res) => {
+  res.json({ msg: 'pong' });
+});
+
+
 app.get('/', (req, res) => {
   res.send({ msg: 'Cyber-Trust Backend - up. POST /api/scan/url { url }' });
 });

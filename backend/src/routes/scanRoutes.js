@@ -1,8 +1,7 @@
 const express = require('express');
+const { scanExtension } = require('../controllers/scanController');
 const router = express.Router();
-const { scanByUrl, getCached } = require('../controllers/scanController');
 
-router.post('/url', scanByUrl);       // { url: "chrome web store url" }
-router.get('/cached/:id', getCached); // get cached results by extension id
+router.post('/', scanExtension);
 
 module.exports = router;

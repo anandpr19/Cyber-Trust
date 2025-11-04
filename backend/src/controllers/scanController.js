@@ -1,71 +1,66 @@
-// src/controllers/scanController.js
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
-const Extension = require("../models/Extension");
-const { analyzePackage } = require("../utils/scanner");
+const { fetchExtensionBuffer } = require('../services/fetchExtension');
+const { analyzeExtension } = require('../services/analyzer');
+const Extension = require('../models/Extension');
+const AdmZip = require('adm-zip');
 
-const scanByUrl = async (req, res) => {
+exports.scanExtension = async (req, res) => {
   try {
-    const { url } = req.body;
-    if (!url) return res.status(400).json({ error: "No URL provided" });
+    console.log('🔥 /api/scan triggered with body:', req.body);
 
-    const match = url.match(/detail\/.*\/([a-p]{32})/);
-    if (!match) return res.status(400).json({ error: "Invalid Chrome Web Store URL" });
-    const extensionId = match[1];
-
-    // 🔍 Check DB cache
-    let existing = await Extension.findOne({ extensionId });
-    if (existing) {
-      console.log(`📦 Using cached scan for ${extensionId}`);
-      return res.json(existing);
+    const { extensionId, url } = req.body;
+    if (!extensionId && !url) {
+      return res.status(400).json({ error: 'Provide extensionId or url' });
     }
 
-    // ⚠️ Skip CRX download for now (handled later by ZIP upload)
-    console.log(`🚫 Skipping CRX download — waiting for ZIP integration.`);
+    const idOrUrl = extensionId || url;
 
-    // Stub manifest (mock)
-    const manifest = {
-      name: "Unknown (ZIP not yet parsed)",
-      version: "N/A",
-      permissions: ["tabs", "storage"]
-    };
+    // Step 1: Fetch CRX or ZIP as buffer
+    const buffer = await fetchExtensionBuffer(idOrUrl);
 
-    // Analyze using scanner.js
-    const { score, findings } = analyzePackage(manifest, {});
+    console.log('📦 Buffer received, length:', buffer.length);
+    console.log('📂 Attempting to read manifest from ZIP...');
 
-    // Save to Mongo
+    // Step 2: Try to open as ZIP
+    let zip;
+    try {
+      zip = new AdmZip(buffer);
+    } catch (zipErr) {
+      console.error('❌ ADM-ZIP failed:', zipErr.message);
+      return res.status(400).json({ error: 'Invalid ZIP/CRX format. Could not extract contents.' });
+    }
+
+    // Step 3: Extract manifest.json
+    const manifestEntry = zip.getEntry('manifest.json');
+    if (!manifestEntry) {
+      return res.status(400).json({ error: 'manifest.json not found in archive' });
+    }
+
+    const manifestData = JSON.parse(zip.readAsText(manifestEntry));
+
+    // Step 4: Analyze
+    const { score, findings } = await analyzeExtension(buffer);
+
+    // Step 5: Save to DB
     const newExt = new Extension({
-      extensionId,
-      manifest,
+      extensionId: idOrUrl,
+      name: manifestData.name,
+      manifest: manifestData,
       score,
       findings
     });
 
     await newExt.save();
 
+    console.log('✅ Scan complete for', manifestData.name);
     res.json({
-      extensionId,
+      message: 'Scan complete ✅',
+      manifest: manifestData,
       score,
-      findings,
-      message: "Scanned successfully (mocked, ZIP integration next)"
+      findings
     });
 
   } catch (err) {
-    console.error("scanByUrl error:", err);
-    res.status(500).json({ error: "Failed to scan extension", details: err.message });
-  }
-};
-
-const getCached = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const ext = await Extension.findOne({ extensionId: id });
-    if (!ext) return res.status(404).json({ message: "No record found" });
-    res.json(ext);
-  } catch (err) {
+    console.error('💥 Scan error:', err);
     res.status(500).json({ error: err.message });
   }
 };
-
-module.exports = { scanByUrl, getCached };
