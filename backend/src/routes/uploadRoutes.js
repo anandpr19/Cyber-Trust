@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { handleUpload } = require('../controllers/uploadController');
-const {scanExtension} = require('./controllers/scanController')
 
 // memory storage (no disk)
 const storage = multer.memoryStorage();

@@ -1,66 +1,40 @@
+// src/controllers/scanController.js
 const { fetchExtensionBuffer } = require('../services/fetchExtension');
 const { analyzeExtension } = require('../services/analyzer');
 const Extension = require('../models/Extension');
-const AdmZip = require('adm-zip');
 
 exports.scanExtension = async (req, res) => {
   try {
-    console.log('🔥 /api/scan triggered with body:', req.body);
-
     const { extensionId, url } = req.body;
-    if (!extensionId && !url) {
-      return res.status(400).json({ error: 'Provide extensionId or url' });
-    }
+    if (!extensionId && !url) return res.status(400).json({ error: 'Provide extensionId or url' });
 
     const idOrUrl = extensionId || url;
+    console.log('scanExtension: scanning', idOrUrl);
 
-    // Step 1: Fetch CRX or ZIP as buffer
-    const buffer = await fetchExtensionBuffer(idOrUrl);
+    // Fetch and get ZIP payload buffer
+    const zipBuf = await fetchExtensionBuffer(idOrUrl);
 
-    console.log('📦 Buffer received, length:', buffer.length);
-    console.log('📂 Attempting to read manifest from ZIP...');
+    // Analyze (in-memory)
+    const { manifest, files, score, findings } = await analyzeExtension(zipBuf);
 
-    // Step 2: Try to open as ZIP
-    let zip;
-    try {
-      zip = new AdmZip(buffer);
-    } catch (zipErr) {
-      console.error('❌ ADM-ZIP failed:', zipErr.message);
-      return res.status(400).json({ error: 'Invalid ZIP/CRX format. Could not extract contents.' });
-    }
-
-    // Step 3: Extract manifest.json
-    const manifestEntry = zip.getEntry('manifest.json');
-    if (!manifestEntry) {
-      return res.status(400).json({ error: 'manifest.json not found in archive' });
-    }
-
-    const manifestData = JSON.parse(zip.readAsText(manifestEntry));
-
-    // Step 4: Analyze
-    const { score, findings } = await analyzeExtension(buffer);
-
-    // Step 5: Save to DB
+    // Save to DB (non-blocking via await so demo shows persistence)
     const newExt = new Extension({
-      extensionId: idOrUrl,
-      name: manifestData.name,
-      manifest: manifestData,
+      extensionId: extensionId || manifest.key || manifest.name,
+      name: manifest.name,
+      manifest,
       score,
       findings
     });
-
     await newExt.save();
 
-    console.log('✅ Scan complete for', manifestData.name);
-    res.json({
-      message: 'Scan complete ✅',
-      manifest: manifestData,
-      score,
-      findings
-    });
+    // Drop large objects explicitly
+    // (V8 will GC; this is just to help)
+    // eslint-disable-next-line no-unused-vars
+    zipBuf = null;
 
+    res.json({ message: 'Scan complete', manifest, score, findings });
   } catch (err) {
-    console.error('💥 Scan error:', err);
+    console.error('scanExtension error:', err);
     res.status(500).json({ error: err.message });
   }
 };

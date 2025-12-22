@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>CyberTrust - Scan Extension</title>
+  <style>
+    body { font-family: Arial, sans-serif; width: 320px; padding: 12px; }
+    input, button { width: 100%; padding: 8px; margin-top: 6px;}
+    #status { margin-top: 8px; font-size: 13px; color:#444;}
+    pre { white-space: pre-wrap; word-break: break-word; max-height: 240px; overflow:auto; background:#f8f8f8; padding:8px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <h3>Cyber-Trust Scanning</h3>
+  <label>Chrome Web Store URL or Extension ID</label>
+  <input id="ext" placeholder="https://chromewebstore.google.com/detail/…/abcdef..." />
+  <button id="scan">Fetch & Scan</button>
+  <div id="status"></div>
+  <pre id="result"></pre>
+
+  <script src="popup.js"></script>
+</body>
+</html>

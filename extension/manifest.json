@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "CyberTrust CRX Fetcher",
+  "version": "0.1.0",
+  "description": "Download CRX from Chrome Web Store and send to Cyber-Trust backend for analysis.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "downloads",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://chromewebstore.google.com/*",
+    "https://clients2.google.com/*",
+    "https://*.google.com/*",
+    "http://localhost/*",
+    "https://localhost/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "CyberTrust - Fetch and Scan"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

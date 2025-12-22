@@ -1,22 +1,34 @@
 const AdmZip = require('adm-zip');
 const { evaluatePolicies } = require('./policyEngine');
-exports.analyzeExtension = async (buffer) => {
-  const zip = new AdmZip(buffer);
-  const zipEntries = zip.getEntries();
 
+exports.analyzeBufferZip = async (zipBuffer) => {
+  let zip;
+  try {
+    zip = new AdmZip(zipBuffer);
+  } catch (err) {
+    throw new Error('ADM-ZIP: ' + err.message);
+  }
+
+  const entries = zip.getEntries();
   const files = {};
   let manifest = null;
 
-  zipEntries.forEach(entry => {
-    if (entry.entryName.endsWith('manifest.json')) {
-      manifest = JSON.parse(entry.getData().toString('utf8'));
-    } else {
-      files[entry.entryName] = entry.getData().toString('utf8');
+  for (const entry of entries) {
+    if (entry.isDirectory) continue;
+    try {
+      const name = entry.entryName;
+      const text = zip.readAsText(entry);
+      files[name] = text;
+      if (name === 'manifest.json' || name.endsWith('/manifest.json')) {
+        manifest = JSON.parse(text);
+      }
+    } catch (e) {
+      // ignore binary entries
     }
-  });
+  }
 
-  if (!manifest) throw new Error('manifest.json not found in archive');
+  if (!manifest) throw new Error('manifest.json not found');
 
   const { score, findings } = evaluatePolicies(manifest, files);
-  return { manifest, score, findings };
+  return { manifest, files, score, findings };
 };
