@@ -1,19 +1,52 @@
-// src/models/Extension.js
 const mongoose = require('mongoose');
 
 const ExtensionSchema = new mongoose.Schema({
-  extensionId: { type: String, required: true, index: true },
-  name: { type: String },
-  version: { type: String },
-  manifest: { type: Object },
-  permissions: { type: [String], default: [] },
-  findings: { type: [String], default: [] },
-  score: { type: Number, default: null },
-  scannedAt: { type: Date, default: Date.now },
-  sourceUrl: { type: String }, // original webstore url
-}, { timestamps: true });
+  extensionId: {
+    type: String,
+    required: true,
+    index: true
+  },
+  name: {
+    type: String,
+    default: 'Unknown'
+  },
+  version: {
+    type: String,
+    default: '0.0.0'
+  },
+  manifest: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  permissions: {
+    type: [String],
+    default: []
+  },
+  // FIX: Changed from [String] to Mixed to accept objects
+  findings: {
+    type: mongoose.Schema.Types.Mixed,
+    default: []
+  },
+  score: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
+  },
+  sourceUrl: {
+    type: String,
+    default: null
+  },
+  scannedAt: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: true,
+  collection: 'extensions'
+});
 
-// optional compound index to quickly get latest by extensionId + version
-ExtensionSchema.index({ extensionId: 1, version: 1 }, { unique: false });
+// Index for quick lookups
+ExtensionSchema.index({ extensionId: 1, version: -1 });
 
 module.exports = mongoose.model('Extension', ExtensionSchema);
