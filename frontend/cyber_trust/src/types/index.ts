@@ -79,7 +79,7 @@ export interface AppState {
 
 export interface ButtonProps {
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
   variant?: 'primary' | 'secondary' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
@@ -87,7 +87,6 @@ export interface ButtonProps {
   className?: string;
   type?: 'button' | 'submit' | 'reset';
 }
-
 export interface BadgeProps {
   variant: 'critical' | 'high' | 'medium' | 'low' | 'safe';
   children: React.ReactNode;

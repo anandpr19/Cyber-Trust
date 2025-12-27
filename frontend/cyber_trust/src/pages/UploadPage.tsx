@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAnalysis } from '../hooks/useAnalysis';
 import { useLocalStorage } from '../hooks/useLocalStorage';
@@ -12,8 +12,9 @@ export const UploadPage: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const [hasNavigated, setHasNavigated] = useState(false);
 
-    const { result, isLoading, error, uploadFile } = useAnalysis();
+    const { result, isLoading, error, uploadFile, clear } = useAnalysis();
     const { analyses, saveAnalysis } = useLocalStorage();
 
     // Handle file selection
@@ -26,29 +27,57 @@ export const UploadPage: React.FC = () => {
         try {
             await uploadFile(file);
         } catch {
-            // Don't need the error object, just show message
             setToast({ message: 'Failed to analyze extension', type: 'error' });
         }
     };
 
-    // Handle drop
-    const handleDrop = (e: React.DragEvent) => {
+    // Handle drag over
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
+        e.stopPropagation();
+        if (!isLoading) {
+            setIsDragging(true);
+        }
+    };
+
+    // Handle drag leave
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    // Handle drop
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
         setIsDragging(false);
 
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleFileSelect(files[0]);
+        if (!isLoading && e.dataTransfer.files.length > 0) {
+            handleFileSelect(e.dataTransfer.files[0]);
+        }
+    };
+
+    // Handle input change
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            handleFileSelect(file);
+        }
+        // Reset input value after file is selected
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
         }
     };
 
     // Navigate to results when analysis is complete
-    React.useEffect(() => {
-        if (result) {
+    useEffect(() => {
+        if (result && !hasNavigated) {
+            setHasNavigated(true);
             saveAnalysis(result);
             navigate('/results', { state: { analysis: result } });
         }
-    }, [result, navigate, saveAnalysis]);
+    }, [result, hasNavigated, navigate, saveAnalysis]);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pt-24 pb-12">
@@ -63,28 +92,23 @@ export const UploadPage: React.FC = () => {
 
                         {/* Upload Box */}
                         <div
-                            onDragOver={(e) => {
-                                e.preventDefault();
-                                setIsDragging(true);
-                            }}
-                            onDragLeave={() => setIsDragging(false)}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
                             onDrop={handleDrop}
-                            className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer group ${isDragging
+                            className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 ${
+                                isDragging
                                     ? 'border-blue-500 bg-blue-500/10 scale-105'
                                     : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
-                                }`}
-                            onClick={() => fileInputRef.current?.click()}
+                            } ${isLoading ? 'pointer-events-none opacity-75' : 'cursor-pointer'}`}
                         >
+                            {/* Hidden File Input */}
                             <input
                                 ref={fileInputRef}
                                 type="file"
                                 accept=".crx"
-                                onChange={(e) => {
-                                    if (e.target.files?.[0]) {
-                                        handleFileSelect(e.target.files[0]);
-                                    }
-                                }}
+                                onChange={handleInputChange}
                                 className="hidden"
+                                disabled={isLoading}
                             />
 
                             {isLoading ? (
