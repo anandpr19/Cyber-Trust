@@ -1,6 +1,6 @@
-
 import { Request, Response } from 'express';
 import { analyzeBufferZip } from '../services/analyzer';
+import { formatFindingsForUsers } from '../services/findingsFormatter';
 import Extension from '../models/Extension';
 
 function crxToZipBuffer(buf: Buffer): Buffer {
@@ -111,6 +111,9 @@ export const handleUpload = async (req: Request, res: Response): Promise<void> =
 
     console.log(`✅ Analysis complete. Score: ${analysis.score}`);
 
+    //Format findings for frontend
+    const userFriendlyReport = formatFindingsForUsers(analysis.findings, analysis.score);
+
     let saved = false;
     let dbError: string | null = null;
 
@@ -134,16 +137,25 @@ export const handleUpload = async (req: Request, res: Response): Promise<void> =
       dbError = msg;
     }
 
+    // Return both raw findings (for reference) and user-friendly report
     res.status(200).json({
       success: true,
       extensionId,
       name: analysis.manifest.name || extensionId,
       version: analysis.manifest.version || 'unknown',
-      manifest: analysis.manifest,
-      score: analysis.score,
-      findings: analysis.findings,
-      fileSize: buf.length,
-      zipSize: zipBuf.length,
+      
+      // User-friendly report 
+      report: userFriendlyReport,
+      
+      //raw data for reference
+      rawData: {
+        manifest: analysis.manifest,
+        score: analysis.score,
+        findings: analysis.findings,
+        fileSize: buf.length,
+        zipSize: zipBuf.length
+      },
+      
       savedToDb: saved,
       dbError: dbError || undefined,
       timestamp: new Date().toISOString()

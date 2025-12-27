@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/* Custom animations */
+@layer utilities {
+  /* Fade in */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+  /* Fade in with slide up */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+  /* Float animation */
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  /* Pulse glow */
+  @keyframes pulseGlow {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgb(59, 130, 246, 0.7);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgb(59, 130, 246, 0);
+    }
+  }
+  .animate-pulse-glow {
+    animation: pulseGlow 2s infinite;
+  }
+  /* Bounce subtle */
+  @keyframes bounceSubtle {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+  .animate-bounce-subtle {
+    animation: bounceSubtle 2s infinite;
+  }
+  /* Expand */
+  @keyframes expand {
+    from {
+      max-height: 0;
+      opacity: 0;
+    }
+    to {
+      max-height: 500px;
+      opacity: 1;
+    }
+  }
+  .animate-expand {
+    animation: expand 0.3s ease-out;
+  }
+  /* Smooth scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgb(15, 23, 42);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(71, 85, 105);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(100, 116, 139);
+  }
+  /* Smooth transitions */
+  * {
+    @apply transition-colors;
+  }
+  /* Focus styles for accessibility */
+  button:focus-visible,
+  a:focus-visible {
+    @apply outline-blue-500 outline-2 outline-offset-2;
+  }
+}
+/* Tailwind configuration overrides */
+@layer components {
+  .container {
+    @apply max-w-7xl;
+  }
+  /* Custom scrollbar for Firefox */
+  * {
+    scrollbar-color: rgb(71, 85, 105) rgb(15, 23, 42);
+    scrollbar-width: thin;
+  }
+}
+/* Body styles */
+body {
+  @apply bg-slate-900 text-white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* Remove focus outline from mouse users */
+html.no-focus-outline *:focus {
+  outline: none;
+}
