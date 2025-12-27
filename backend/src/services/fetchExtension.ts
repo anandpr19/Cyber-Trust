@@ -1,20 +1,16 @@
-const axios = require('axios');
+import axios from 'axios';
 
-const CHROME_VERSION = '131.0.6778.86'; // Current Chrome version
-async function fetchFromGoogleWebStore(extensionId) {
+const CHROME_VERSION = '131.0.6778.86';
+
+async function fetchFromGoogleWebStore(extensionId: string): Promise<Buffer> {
   const url = `https://clients2.google.com/service/update2/crx?response=redirect&x=id%3D${extensionId}%26uc&prodversion=${CHROME_VERSION}`;
 
   console.log(`🔗 Fetching from Google Web Store: ${extensionId}`);
 
   try {
-    const response = await axios({
-      method: 'GET',
-      url: url,
+    const response = await axios.get<any>(url, {
       headers: {
-        // CRITICAL: Google checks this first
         'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${CHROME_VERSION} Safari/537.36`,
-        
-        // Google expects these
         'Accept': 'application/octet-stream, */*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9',
         'Accept-Encoding': 'gzip, deflate',
@@ -26,39 +22,26 @@ async function fetchFromGoogleWebStore(extensionId) {
         'Sec-Fetch-Site': 'none',
         'Cache-Control': 'max-age=0'
       },
-      
-      // Handle redirects (IMPORTANT - CRX URLs redirect)
       maxRedirects: 10,
-      
-      // Timeout in milliseconds
       timeout: 30000,
-      
-      // THIS IS IMPORTANT: Accept any status code (Google redirects with 302)
       validateStatus: () => true,
-      
-      // Return as Buffer (not text)
       responseType: 'arraybuffer'
-    });
+    } as any);
 
-    // Check if successful
-    if (!response.data || response.data.length < 100) {
-      throw new Error(`Empty response (${response.data?.length || 0} bytes)`);
+    if (!response.data || (response.data as Buffer).length < 100) {
+      throw new Error(`Empty response (${(response.data as Buffer)?.length || 0} bytes)`);
     }
 
-    console.log(`✅ Downloaded ${response.data.length} bytes from Google`);
-    return Buffer.from(response.data);
-
+    console.log(`✅ Downloaded ${(response.data as Buffer).length} bytes from Google`);
+    return Buffer.from(response.data as any);
   } catch (error) {
-    console.warn(`❌ Google Web Store fetch failed: ${error.message}`);
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.warn(`❌ Google Web Store fetch failed: ${errorMsg}`);
     throw error;
   }
 }
 
-/**
- * Fallback method: Try alternative sources
- * (These are less reliable but work as backup)
- */
-async function fetchFromMirror(extensionId) {
+async function fetchFromMirror(extensionId: string): Promise<Buffer> {
   const mirrors = [
     `https://crx.dam.io/${extensionId}.crx`,
     `https://chrome-extension-downloader.com/${extensionId}.crx`
@@ -68,9 +51,7 @@ async function fetchFromMirror(extensionId) {
     try {
       console.log(`🔄 Trying mirror: ${mirrorUrl}`);
 
-      const response = await axios({
-        method: 'GET',
-        url: mirrorUrl,
+      const response = await axios.get<any>(mirrorUrl, {
         headers: {
           'User-Agent': `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${CHROME_VERSION} Safari/537.36`,
           'Accept': 'application/octet-stream'
@@ -78,40 +59,31 @@ async function fetchFromMirror(extensionId) {
         timeout: 15000,
         validateStatus: () => true,
         responseType: 'arraybuffer'
-      });
+      } as any);
 
-      if (response.data && response.data.length > 100) {
-        console.log(`✅ Downloaded from mirror: ${response.data.length} bytes`);
-        return Buffer.from(response.data);
+      if (response.data && (response.data as Buffer).length > 100) {
+        console.log(`✅ Downloaded from mirror: ${(response.data as Buffer).length} bytes`);
+        return Buffer.from(response.data as any);
       }
     } catch (err) {
-      console.warn(`⚠️ Mirror failed: ${err.message}`);
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      console.warn(`⚠️ Mirror failed: ${errorMsg}`);
     }
   }
 
   throw new Error('All fallback mirrors failed');
 }
 
-/**
- * Parse extension ID from Chrome Web Store URL
- * Handles multiple URL formats:
- * - https://chromewebstore.google.com/detail/name/abcdef123456
- * - chrome-extension://abcdef123456
- * - Just the ID: abcdef123456
- */
-function extractExtensionId(input) {
-  // If it's already a 32-char ID
+export function extractExtensionId(input: string): string {
   if (/^[a-p0-9]{32}$/.test(input)) {
     return input;
   }
 
-  // Extract from Chrome Web Store URL
   const match = input.match(/([a-p0-9]{32})(?:\?|$)/);
   if (match) {
     return match[1];
   }
 
-  // Extract from chrome-extension:// URL
   const extMatch = input.match(/chrome-extension:\/\/([a-p0-9]{32})/);
   if (extMatch) {
     return extMatch[1];
@@ -125,35 +97,24 @@ function extractExtensionId(input) {
   );
 }
 
-/**
- * Main export: Fetch extension by ID or URL
- * Returns Buffer containing CRX file
- */
-async function fetchExtensionCRX(input) {
+export async function fetchExtensionCRX(input: string): Promise<Buffer> {
   try {
-    // Step 1: Parse the input
     console.log(`\n📥 Fetch request: ${input}`);
     const extensionId = extractExtensionId(input);
     console.log(`✅ Extracted ID: ${extensionId}`);
 
-    // Step 2: Try Google Web Store first (most reliable)
     try {
       return await fetchFromGoogleWebStore(extensionId);
     } catch (err) {
-      console.warn(`⚠️ Google Web Store unavailable: ${err.message}`);
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      console.warn(`⚠️ Google Web Store unavailable: ${errorMsg}`);
       console.log('🔄 Trying fallback mirrors...');
-      
-      // Step 3: If Google fails, try mirrors
+
       return await fetchFromMirror(extensionId);
     }
-
   } catch (err) {
-    console.error(`❌ Failed to fetch extension: ${err.message}`);
-    throw new Error(`Could not fetch extension: ${err.message}`);
+    const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+    console.error(`❌ Failed to fetch extension: ${errorMsg}`);
+    throw new Error(`Could not fetch extension: ${errorMsg}`);
   }
 }
-
-module.exports = {
-  fetchExtensionCRX,
-  extractExtensionId
-};

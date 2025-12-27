@@ -1,10 +1,9 @@
-const { fetchExtensionCRX, extractExtensionId } = require('../services/fetchExtension');
-const { analyzeBufferZip } = require('../services/analyzer');
+import { Request, Response } from 'express';
+import { fetchExtensionCRX, extractExtensionId } from '../services/fetchExtension';
+import { analyzeBufferZip } from '../services/analyzer';
+import Extension from '../models/Extension';
 
-/**
- * Convert CRX buffer to ZIP buffer (same as uploadController)
- */
-function crxToZipBuffer(buf) {
+function crxToZipBuffer(buf: Buffer): Buffer {
   try {
     if (buf.length >= 4) {
       const header = buf.slice(0, 4).toString('ascii');
@@ -58,30 +57,19 @@ function crxToZipBuffer(buf) {
 
     throw new Error('File is not a valid CRX or ZIP');
   } catch (err) {
-    throw new Error(`CRX conversion failed: ${err.message}`);
+    throw new Error(`CRX conversion failed: ${err instanceof Error ? err.message : 'Unknown'}`);
   }
 }
 
-/**
- * Handle scan request by Extension ID or URL
- * POST /api/scan
- * 
- * Body:
- * {
- *   "extensionId": "abcdef123456..." OR
- *   "url": "https://chromewebstore.google.com/detail/name/abcdef123456..."
- * }
- */
-exports.scanExtension = async (req, res) => {
-  let crxBuffer = null;
-  let zipBuffer = null;
+export const scanExtension = async (req: Request, res: Response): Promise<void> => {
+  let crxBuffer: Buffer | null = null;
+  let zipBuffer: Buffer | null = null;
 
   try {
-    // Step 1: Get input
     const { extensionId, url } = req.body;
 
     if (!extensionId && !url) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Missing input',
         message: 'Provide either "extensionId" or "url"',
         example: {
@@ -89,46 +77,44 @@ exports.scanExtension = async (req, res) => {
           url: 'https://chromewebstore.google.com/detail/google-translate/aapbdbdomjkkjkaonfhkkikfgjllcleb'
         }
       });
+      return;
     }
 
     const input = extensionId || url;
 
-    // Step 2: Fetch CRX from Google or mirrors
     console.log(`\n📥 Scan request: ${input}`);
-    
+
     try {
       crxBuffer = await fetchExtensionCRX(input);
     } catch (err) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Failed to download extension',
-        message: err.message,
-        hint: 'Make sure the Extension ID or URL is correct. Check the Chrome Web Store URL.'
+        message: err instanceof Error ? err.message : 'Unknown error',
+        hint: 'Make sure the Extension ID or URL is correct.'
       });
+      return;
     }
 
-    // Step 3: Convert CRX to ZIP
     console.log('🔄 Converting CRX to ZIP...');
     try {
       zipBuffer = crxToZipBuffer(crxBuffer);
     } catch (err) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Invalid extension format',
-        message: err.message
+        message: err instanceof Error ? err.message : 'Unknown error'
       });
+      return;
     }
 
-    // Step 4: Analyze
     console.log('🔍 Starting analysis...');
     const analysis = await analyzeBufferZip(zipBuffer);
 
     console.log(`✅ Analysis complete. Score: ${analysis.score}`);
 
-    // Step 5: Save to database
     let saved = false;
-    let dbError = null;
+    let dbError: string | null = null;
 
     try {
-      const Extension = require('../models/Extension');
       const parsedId = extractExtensionId(input);
 
       const ext = new Extension({
@@ -145,11 +131,11 @@ exports.scanExtension = async (req, res) => {
       console.log('💾 Saved to database');
       saved = true;
     } catch (dbErr) {
-      console.warn('⚠️ Database save failed:', dbErr.message);
-      dbError = dbErr.message;
+      const msg = dbErr instanceof Error ? dbErr.message : 'Unknown error';
+      console.warn('⚠️ Database save failed:', msg);
+      dbError = msg;
     }
 
-    // Step 6: Return results
     res.status(200).json({
       success: true,
       extensionId: extractExtensionId(input),
@@ -164,24 +150,15 @@ exports.scanExtension = async (req, res) => {
       dbError: dbError || undefined,
       timestamp: new Date().toISOString()
     });
-
   } catch (err) {
-    console.error('❌ Scan error:', err.message);
-    
+    console.error('❌ Scan error:', err instanceof Error ? err.message : 'Unknown');
+
     if (!res.headersSent) {
       res.status(500).json({
         error: 'Analysis failed',
-        message: err.message,
+        message: err instanceof Error ? err.message : 'Unknown error',
         timestamp: new Date().toISOString()
       });
-    }
-  } finally {
-    // Cleanup
-    try {
-      // Let garbage collector handle it
-      // Don't reassign const variables
-    } catch (e) {
-      // Ignore
     }
   }
 };

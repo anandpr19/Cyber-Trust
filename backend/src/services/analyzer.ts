@@ -1,61 +1,61 @@
-const AdmZip = require('adm-zip');
-const { evaluatePolicies } = require('./policyEngine');
+import AdmZip from 'adm-zip';
+import { evaluatePolicies, PolicyEvaluationResult } from './policyEngine';
 
-/**
- * Extract and analyze a ZIP buffer containing extension files
- */
-async function analyzeBufferZip(zipBuffer) {
+export interface AnalysisResult {
+  manifest: Record<string, any>;
+  files: Record<string, string>;
+  score: number;
+  findings: any[];
+}
+
+export async function analyzeBufferZip(zipBuffer: Buffer): Promise<AnalysisResult> {
   console.log('📦 Extracting ZIP...');
-  
-  let zip;
+
+  let zip: AdmZip;
   try {
     zip = new AdmZip(zipBuffer);
   } catch (err) {
-    throw new Error(`Failed to parse ZIP: ${err.message}`);
+    throw new Error(`Failed to parse ZIP: ${err instanceof Error ? err.message : 'Unknown error'}`);
   }
 
   const entries = zip.getEntries();
   console.log(`📂 Found ${entries.length} files in archive`);
 
-  const files = {};
-  let manifest = null;
+  const files: Record<string, string> = {};
+  let manifest: Record<string, any> | null = null;
 
-  // Extract all text files
+  // Extract files
   for (const entry of entries) {
     try {
       if (entry.isDirectory) continue;
 
       const name = entry.entryName;
 
-      // Try to read as text
       try {
         const text = zip.readAsText(entry);
         files[name] = text;
 
-        // Capture manifest
         if (name === 'manifest.json' || name.endsWith('/manifest.json')) {
           manifest = JSON.parse(text);
-          console.log(`✅ Found manifest: ${manifest.name || 'unknown'}`);
+          if (manifest) {
+            console.log(`✅ Found manifest: ${manifest.name || 'unknown'}`);
+          }
         }
       } catch (textErr) {
-        // Binary file - skip silently
-        if (name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.woff')) {
-          // Expected binary files
-        } else {
+        // Binary file - skip
+        if (!name.endsWith('.png') && !name.endsWith('.jpg') && !name.endsWith('.woff')) {
           console.log(`⊘ Could not read as text: ${name}`);
         }
       }
     } catch (err) {
-      console.warn(`⚠️ Error processing entry ${entry.entryName}:`, err.message);
+      console.warn(`⚠️ Error processing entry:`, err instanceof Error ? err.message : 'Unknown');
     }
   }
 
-  // Validate manifest exists
   if (!manifest) {
     throw new Error('manifest.json not found in extension');
   }
 
-  // Run policy evaluation
   console.log('🔐 Evaluating security policies...');
   const { score, findings } = evaluatePolicies(manifest, files);
 
@@ -66,7 +66,3 @@ async function analyzeBufferZip(zipBuffer) {
     findings
   };
 }
-
-module.exports = {
-  analyzeBufferZip
-};

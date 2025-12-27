@@ -1,11 +1,14 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const path = require('path');
+import 'dotenv/config';
+import express, { Express, Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import mongoose from 'mongoose';
 
-// Initialize Express app
-const app = express();
+// Routes
+import { default as scanRoutes } from './routes/scanRoutes';
+import { default as uploadRoutes } from './routes/uploadRoutes';
+
+const app: Express = express();
 const PORT = process.env.PORT || 4000;
 
 // Middleware
@@ -14,35 +17,32 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Database connection (optional - can work without MongoDB initially)
+// Database connection
 let dbConnected = false;
-const connectDB = async () => {
+
+const connectDB = async (): Promise<void> => {
   try {
-    const mongoose = require('mongoose');
-    const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/cyber-trust';
+    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/cyber-trust';
     
-    await mongoose.connect(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoUri);
     
     console.log('✅ MongoDB connected');
     dbConnected = true;
   } catch (err) {
-    console.warn('⚠️ MongoDB unavailable - running in memory mode. Error:', err.message);
+    console.warn('⚠️ MongoDB unavailable - running in memory mode');
+    if (err instanceof Error) {
+      console.warn(`Error: ${err.message}`);
+    }
     dbConnected = false;
   }
 };
 
 // Routes
-const scanRoutes = require('./routes/scanRoutes');
-const uploadRoutes = require('./routes/uploadRoutes');
-
 app.use('/api/scan', scanRoutes);
 app.use('/api/upload', uploadRoutes);
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
+// Health check
+app.get('/api/health', (req: Request, res: Response) => {
   res.json({
     status: 'ok',
     dbConnected,
@@ -52,7 +52,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error('❌ Error:', err.message);
   res.status(err.status || 500).json({
     error: err.message || 'Internal server error',
@@ -61,7 +61,7 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use((req, res) => {
+app.use((req: Request, res: Response) => {
   res.status(404).json({
     error: 'Route not found',
     path: req.originalUrl
@@ -69,7 +69,7 @@ app.use((req, res) => {
 });
 
 // Start server
-const startServer = async () => {
+const startServer = async (): Promise<void> => {
   try {
     await connectDB();
     
@@ -85,4 +85,4 @@ const startServer = async () => {
 
 startServer();
 
-module.exports = app;   
+export default app;

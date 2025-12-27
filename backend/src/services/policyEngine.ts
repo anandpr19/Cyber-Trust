@@ -1,7 +1,33 @@
-/**
- * Risky permissions and their penalty scores
- */
-const RISKY_PERMISSIONS = {
+export interface RiskPermission {
+  penalty: number;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  desc: string;
+}
+
+export interface CodePattern {
+  key: string;
+  regex: RegExp;
+  penalty: number;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  desc: string;
+}
+
+export interface Finding {
+  type: 'permission' | 'host-permission' | 'code-pattern' | 'deprecated' | 'info';
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'good';
+  description: string;
+  permission?: string;
+  pattern?: string;
+  file?: string;
+  value?: string;
+}
+
+export interface PolicyEvaluationResult {
+  score: number;
+  findings: Finding[];
+}
+
+const RISKY_PERMISSIONS: Record<string, RiskPermission> = {
   'history': {
     penalty: 25,
     severity: 'high',
@@ -59,10 +85,7 @@ const RISKY_PERMISSIONS = {
   }
 };
 
-/**
- * Code patterns that indicate security risks
- */
-const CODE_PATTERNS = [
+const CODE_PATTERNS: CodePattern[] = [
   {
     key: 'insecure-http',
     regex: /http:\/\/[a-zA-Z0-9.-]+\.(com|org|net|io)/i,
@@ -107,85 +130,81 @@ const CODE_PATTERNS = [
   }
 ];
 
-/**
- * Evaluate security policies against manifest and files
- */
-function evaluatePolicies(manifest, files) {
+export function evaluatePolicies(
+  manifest: Record<string, any>,
+  files: Record<string, string>
+): PolicyEvaluationResult {
   let score = 100;
-  const findings = [];
+  const findings: Finding[] = [];
 
   console.log('📋 Checking permissions...');
-  
+
   // Collect all permissions
-  const permissions = new Set();
-  
+  const permissions = new Set<string>();
+
   if (Array.isArray(manifest.permissions)) {
-    manifest.permissions.forEach(p => permissions.add(p));
+    manifest.permissions.forEach((p: string) => permissions.add(p));
   }
   if (Array.isArray(manifest.optional_permissions)) {
-    manifest.optional_permissions.forEach(p => permissions.add(p));
+    manifest.optional_permissions.forEach((p: string) => permissions.add(p));
   }
   if (Array.isArray(manifest.host_permissions)) {
-    manifest.host_permissions.forEach(p => permissions.add(p));
+    manifest.host_permissions.forEach((p: string) => permissions.add(p));
   }
 
-  // Check each permission
-  permissions.forEach(perm => {
-    if (typeof perm === 'string') {
-      const lower = perm.toLowerCase();
+  // Check permissions
+  permissions.forEach((perm) => {
+    const lower = perm.toLowerCase();
 
-      // Check against risky permissions
-      Object.entries(RISKY_PERMISSIONS).forEach(([key, risk]) => {
-        if (lower.includes(key.toLowerCase())) {
-          const finding = {
-            type: 'permission',
-            severity: risk.severity,
-            permission: key,
-            description: risk.desc
-          };
-          findings.push(finding);
-          score -= risk.penalty;
-          console.log(`  ⚠️ ${key}: -${risk.penalty} points`);
-        }
-      });
-
-      // Check for overly broad host permissions
-      if (lower === '<all_urls>' || lower === '*://*/*' || lower.includes('*://*')) {
-        const finding = {
-          type: 'host-permission',
-          severity: 'critical',
-          description: 'Has access to all websites - can read/modify data on any site',
-          permission: perm
-        };
-        findings.push(finding);
-        score -= 20;
-        console.log(`  ⛔ Broad host permission: -20 points`);
+    Object.entries(RISKY_PERMISSIONS).forEach(([key, risk]) => {
+      if (lower.includes(key.toLowerCase())) {
+        findings.push({
+          type: 'permission',
+          severity: risk.severity,
+          permission: key,
+          description: risk.desc
+        });
+        score -= risk.penalty;
+        console.log(`  ⚠️ ${key}: -${risk.penalty} points`);
       }
+    });
+
+    // Check for overly broad host permissions
+    if (
+      lower === '<all_urls>' ||
+      lower === '*://*/*' ||
+      lower.includes('*://*')
+    ) {
+      findings.push({
+        type: 'host-permission',
+        severity: 'critical',
+        description: 'Has access to all websites - can read/modify data on any site',
+        permission: perm
+      });
+      score -= 20;
+      console.log(`  ⛔ Broad host permission: -20 points`);
     }
   });
 
   console.log('🔍 Scanning code for security issues...');
 
-  // Scan file contents for patterns
   let filesScanned = 0;
   let issuesFound = 0;
 
   Object.entries(files).forEach(([filename, content]) => {
-    // Only check text files (JS, HTML, JSON)
     if (!filename.match(/\.(js|html|json|css)$/i)) return;
-    
+
     filesScanned++;
 
-    CODE_PATTERNS.forEach(pattern => {
+    CODE_PATTERNS.forEach((pattern) => {
       if (pattern.regex.test(content)) {
-        const finding = {
+        findings.push({
           type: 'code-pattern',
           severity: pattern.severity,
           pattern: pattern.key,
           description: pattern.desc,
           file: filename
-        };
-        findings.push(finding);
+        });
         score -= pattern.penalty;
         issuesFound++;
         console.log(`  ⚠️ ${pattern.key} in ${filename}: -${pattern.penalty} points`);
@@ -207,10 +226,9 @@ function evaluatePolicies(manifest, files) {
     console.log(`  ⚠️ Manifest V2 detected: -5 points`);
   }
 
-  // Ensure no negative score
+  // Clamp score to 0-100
   if (score < 0) score = 0;
 
-  // If no findings, add a positive message
   if (findings.length === 0) {
     findings.push({
       type: 'info',
@@ -222,8 +240,4 @@ function evaluatePolicies(manifest, files) {
   return { score, findings };
 }
 
-module.exports = {
-  evaluatePolicies,
-  RISKY_PERMISSIONS,
-  CODE_PATTERNS
-};
+export { RISKY_PERMISSIONS, CODE_PATTERNS };
