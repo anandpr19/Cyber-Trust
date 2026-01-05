@@ -12,9 +12,9 @@ export const UploadPage: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-    const [hasNavigated, setHasNavigated] = useState(false);
+    const hasNavigatedRef = useRef(false);
 
-    const { result, isLoading, error, uploadFile, clear } = useAnalysis();
+    const { result, isLoading, error, uploadFile } = useAnalysis();
     const { analyses, saveAnalysis } = useLocalStorage();
 
     // Handle file selection
@@ -72,12 +72,12 @@ export const UploadPage: React.FC = () => {
 
     // Navigate to results when analysis is complete
     useEffect(() => {
-        if (result && !hasNavigated) {
-            setHasNavigated(true);
+        if (result && !hasNavigatedRef.current) {
+            hasNavigatedRef.current = true;
             saveAnalysis(result);
             navigate('/results', { state: { analysis: result } });
         }
-    }, [result, hasNavigated, navigate, saveAnalysis]);
+    }, [result, navigate, saveAnalysis]);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pt-24 pb-12">
