@@ -3,6 +3,7 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import mongoose from 'mongoose';
+import rateLimit from 'express-rate-limit';
 
 // Routes
 import { default as scanRoutes } from './routes/scanRoutes';
@@ -39,7 +40,7 @@ const connectDB = async (): Promise<void> => {
 
 // Routes
 app.use('/api/scan', scanRoutes);
-app.use('/api/upload', uploadRoutes);
+app.use('/api/upload', uploadRoutes,);
 
 // Health check
 app.get('/api/health', (req: Request, res: Response) => {
@@ -85,4 +86,13 @@ const startServer = async (): Promise<void> => {
 
 startServer();
 
+const uploadLimiter = rateLimit({
+  windowMs:60*60*1000, // 1 hour 
+  max:10,
+  message:'Too Many Upload Requests, Try Again after a Short time',
+  standardHeaders:true,
+  legacyHeaders:false
+})
+
+app.use('/api/upload', uploadLimiter)
 export default app;
