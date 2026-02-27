@@ -126,27 +126,6 @@ Cyber-Trust/
 
 ---
 
-## 🌐 Deployment
-
-### Frontend → Vercel
-
-| Setting | Value |
-|---------|-------|
-| Root Directory | `frontend/cyber_trust` |
-| Build Command | `npm run build` |
-| Output Directory | `dist` |
-| Env Var | `VITE_API_URL=https://your-backend.onrender.com/api` |
-
-### Backend → Render
-
-| Setting | Value |
-|---------|-------|
-| Build Command | `npm install && npm run build` |
-| Start Command | `npm start` |
-| Env Vars | `MONGO_URI`, `GEMINI_API_KEY`, `CORS_ORIGIN=https://your-app.vercel.app` |
-
----
-
 ## 🔒 Security
 
 - **Rate limiting** on all endpoints (scan: 5/min, upload: 10/hr, dashboard: 30/min)
