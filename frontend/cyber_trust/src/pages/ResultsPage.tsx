@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 import { AnalysisResult } from '../types';
-import { Button } from '../components/common/Button';
 import { SimpleView } from '../components/results/SimpleView';
 import { DetailedView } from '../components/results/DetailedView';
 
@@ -19,14 +20,12 @@ export const ResultsPage: React.FC = () => {
         return (saved === 'detailed' ? 'detailed' : 'simple') as ViewMode;
     });
 
-    // Redirect if no analysis data
     useEffect(() => {
         if (!analysis) {
             navigate('/upload');
         }
     }, [analysis, navigate]);
 
-    // Persist view mode
     const switchView = (mode: ViewMode) => {
         setViewMode(mode);
         localStorage.setItem(VIEW_MODE_KEY, mode);
@@ -37,89 +36,105 @@ export const ResultsPage: React.FC = () => {
     }
 
     const { storeMetadata } = analysis;
+    const date = new Date(analysis.timestamp || Date.now()).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric',
+    });
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pt-24 pb-12">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="space-y-6 animate-fade-in">
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"
+            >
+                <div className="space-y-6">
 
-                    {/* Extension Header — shared between both views */}
+                    {/* Extension Header */}
                     <div className="flex items-start justify-between">
                         <div className="flex items-start gap-4 flex-1">
                             {storeMetadata?.icon && (
-                                <img
+                                <motion.img
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.3, delay: 0.1 }}
                                     src={storeMetadata.icon}
-                                    alt={analysis.name}
-                                    className="w-14 h-14 rounded-xl shadow-lg border border-slate-700/50"
-                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                    alt={storeMetadata?.name || 'Extension'}
+                                    className="w-16 h-16 rounded-xl shadow-lg"
                                 />
                             )}
-                            <div>
-                                <h1 className="text-3xl font-bold text-white">{analysis.name}</h1>
-                                <p className="text-slate-400 text-sm">
-                                    v{analysis.version} • Analyzed {new Date(analysis.timestamp).toLocaleDateString()}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-2xl font-bold text-white truncate">
+                                        {storeMetadata?.name || analysis.name || 'Extension'}
+                                    </h1>
+                                    {analysis.version && (
+                                        <span className="font-mono text-sm text-slate-400">
+                                            v{analysis.version}
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="text-[13px] text-slate-500 mt-1">
+                                    Analyzed on {date}
+                                    {storeMetadata?.author && ` · by ${storeMetadata.author}`}
                                 </p>
                             </div>
                         </div>
-                        <Button variant="secondary" size="sm" onClick={() => navigate('/upload')}>
-                            Analyze Another
-                        </Button>
                     </div>
 
-                    {/* View Toggle */}
-                    <div className="flex items-center justify-center">
-                        <div className="flex rounded-xl bg-slate-800/70 p-1 border border-slate-700/50">
+                    {/* View Toggle — tab style */}
+                    <div className="flex gap-6 border-b border-slate-700/50">
+                        {(['simple', 'detailed'] as const).map((v) => (
                             <button
-                                onClick={() => switchView('simple')}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${viewMode === 'simple'
-                                        ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/20'
-                                        : 'text-slate-400 hover:text-slate-200'
+                                key={v}
+                                onClick={() => switchView(v)}
+                                className={`pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${viewMode === v
+                                    ? 'text-white border-white'
+                                    : 'text-slate-400 border-transparent hover:text-white'
                                     }`}
                             >
-                                🛡️ Simple View
+                                {v === 'simple' ? 'Summary' : 'Technical Details'}
                             </button>
-                            <button
-                                onClick={() => switchView('detailed')}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${viewMode === 'detailed'
-                                        ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/20'
-                                        : 'text-slate-400 hover:text-slate-200'
-                                    }`}
-                            >
-                                🔬 Stats for Nerds
-                            </button>
-                        </div>
+                        ))}
                     </div>
 
-                    {/* View Content */}
-                    {viewMode === 'simple' ? (
-                        <SimpleView
-                            analysis={analysis}
-                            onSwitchToDetailed={() => switchView('detailed')}
-                        />
-                    ) : (
-                        <DetailedView
-                            analysis={analysis}
-                            onSwitchToSimple={() => switchView('simple')}
-                        />
-                    )}
+                    {/* Content */}
+                    <motion.div
+                        key={viewMode}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        {viewMode === 'simple' ? (
+                            <SimpleView analysis={analysis} onSwitchToDetailed={() => switchView('detailed')} />
+                        ) : (
+                            <DetailedView analysis={analysis} onSwitchToSimple={() => switchView('simple')} />
+                        )}
+                    </motion.div>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-                        <Button variant="primary" size="lg" onClick={() => navigate('/upload')}>
+                    {/* Bottom Actions */}
+                    <div className="flex items-center gap-4 pt-8 border-t border-slate-700/50">
+                        <button
+                            onClick={() => navigate('/upload')}
+                            className="border border-slate-700/50 text-white font-medium text-sm px-5 py-2.5 rounded-lg hover:bg-slate-800 transition-colors"
+                        >
                             Analyze Another Extension
-                        </Button>
+                        </button>
                         {storeMetadata?.storeUrl && (
-                            <Button
-                                variant="secondary"
-                                size="lg"
-                                onClick={() => window.open(storeMetadata.storeUrl, '_blank')}
+                            <a
+                                href={storeMetadata.storeUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
                             >
-                                View in Web Store
-                            </Button>
+                                View in Chrome Web Store
+                                <ArrowRight size={14} />
+                            </a>
                         )}
                     </div>
+
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 };

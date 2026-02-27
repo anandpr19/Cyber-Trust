@@ -585,6 +585,120 @@ body {
 
 /* ═══════════════════════════════════════════════════════ */
 
+/* TerminalMockup must ALWAYS stay dark (it's a terminal) */
+.light .bg-\[\\#1C1C1E\] {
+  background-color: #1C1C1E !important;
+  color: #71717A !important;
+}
+
+.light .bg-\[\\#1C1C1E\] * {
+  color: inherit;
+}
+
+.light .bg-\[\\#1C1C1E\] .text-white {
+  color: #F4F4F5 !important;
+}
+
+.light .bg-\[\\#1C1C1E\] .text-green-400 {
+  color: #4ade80 !important;
+}
+
+.light .bg-\[\\#1C1C1E\] .text-orange-400 {
+  color: #fb923c !important;
+}
+
+.light .bg-\[\\#1C1C1E\] .text-red-400 {
+  color: #f87171 !important;
+}
+
+/* Header hover states in light */
+.light .hover\:bg-slate-800\/50:hover {
+  background: rgba(241, 245, 249, 0.8);
+}
+
+/* Additional border patterns */
+.light .border-slate-700\/40 {
+  border-color: rgba(203, 213, 225, 0.5);
+}
+
+.light .hover\:bg-slate-700\/20:hover {
+  background: rgba(226, 232, 240, 0.35);
+}
+
+.light .hover\:border-slate-600\/60:hover {
+  border-color: rgba(203, 213, 225, 0.7);
+}
+
+.light .hover\:border-blue-600\/40:hover {
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.light .hover\:border-blue-600\/30:hover {
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Blue buttons: keep white text in light mode */
+.light button.bg-blue-600,
+.light button.hover\:bg-blue-500:hover,
+.light a.bg-blue-600 {
+  color: white !important;
+}
+
+.light .bg-gradient-to-br.from-blue-500 {
+  color: white !important;
+}
+
+/* Badge backgrounds in light */
+.light .bg-red-500\/15 {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.light .bg-orange-500\/15 {
+  background: rgba(249, 115, 22, 0.12);
+}
+
+.light .bg-amber-500\/15 {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.light .bg-green-500\/15 {
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.light .border-red-500\/25 {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.light .border-orange-500\/25 {
+  border-color: rgba(249, 115, 22, 0.2);
+}
+
+.light .border-amber-500\/25 {
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.light .border-green-500\/25 {
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+/* Overrides for bg-slate-700/50 used in new step cards */
+.light .bg-slate-700\/50 {
+  background: rgba(226, 232, 240, 0.5);
+}
+
+.light .border-slate-600\/40 {
+  border-color: rgba(203, 213, 225, 0.5);
+}
+
+/* Blue accent pill on hero */
+.light .bg-blue-500\/10 {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.light .border-blue-500\/20 {
+  border-color: rgba(59, 130, 246, 0.15);
+}
+
 html.no-focus-outline *:focus {
   outline: none;
 }
