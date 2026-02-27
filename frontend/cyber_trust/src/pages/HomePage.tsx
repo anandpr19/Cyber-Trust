@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/common/Button';
+import { apiClient } from '../services/api';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState<{ totalScans: number; uniqueExtensions: number } | null>(null);
+
+  useEffect(() => {
+    apiClient.getDashboard()
+      .then(data => setStats(data.stats))
+      .catch(() => { }); // Fail silently — stats are non-critical
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800">
@@ -43,7 +51,7 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Animated SVG or Illustration */}
+        {/* Animated Illustration */}
         <div className="mt-16 relative h-64 md:h-80 flex items-center justify-center">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl blur-2xl" />
           <div className="relative text-8xl animate-float">🔒</div>
@@ -74,7 +82,7 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Trust & Credibility */}
+      {/* Trust & Credibility — Real Stats */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-600/30 rounded-2xl p-12 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Trusted by Security-Conscious Users</h2>
@@ -83,12 +91,14 @@ export const HomePage: React.FC = () => {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
             <div>
-              <p className="text-2xl font-bold text-blue-400">1000+</p>
+              <p className="text-2xl font-bold text-blue-400">
+                {stats ? `${stats.totalScans}+` : '—'}
+              </p>
               <p className="text-slate-400">Extensions Analyzed</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-blue-400">99%</p>
-              <p className="text-slate-400">Accuracy Rate</p>
+              <p className="text-2xl font-bold text-blue-400">23</p>
+              <p className="text-slate-400">Security Checks</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-blue-400">Instant</p>

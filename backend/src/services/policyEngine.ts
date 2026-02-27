@@ -185,7 +185,7 @@ const CODE_PATTERNS: CodePattern[] = [
   },
   {
     key: 'hardcoded-credentials',
-    regex: /(password|apikey|token|secret)\s*[:=]\s*['"]/i,
+    regex: /(password|api_?key|token|secret)\s*[:=]\s*['"][^'"]{8,}/i,
     penalty: 30,
     severity: 'critical',
     desc: 'Hardcoded credentials found - security risk'
@@ -407,7 +407,7 @@ export function evaluatePolicies(
     console.log(`  ⚠️ Sensitive domain access (${matchedDomains.length} domains): -10 points`);
   }
 
-  // ── Code Pattern Scanning ──
+  // ── Code Pattern Scanning (with comment stripping) ──
   console.log('🔍 Scanning code for security issues...');
 
   let filesScanned = 0;
@@ -418,8 +418,13 @@ export function evaluatePolicies(
 
     filesScanned++;
 
+    // Strip comments to reduce false positives
+    const stripped = content
+      .replace(/\/\/.*$/gm, '')           // Remove single-line comments
+      .replace(/\/\*[\s\S]*?\*\//g, '');   // Remove block comments
+
     CODE_PATTERNS.forEach((pattern) => {
-      if (pattern.regex.test(content)) {
+      if (pattern.regex.test(stripped)) {
         findings.push({
           type: 'code-pattern',
           severity: pattern.severity,
@@ -446,6 +451,26 @@ export function evaluatePolicies(
     });
     score -= 5;
     console.log(`  ⚠️ Manifest V2 detected: -5 points`);
+  }
+
+  // ── Severity-based hard caps ──
+  // Prevent score inflation: critical findings force score ≤ 25, high ≤ 50
+  const hasCritical = findings.some(f => f.severity === 'critical');
+  const hasHigh = findings.some(f => f.severity === 'high');
+  const totalFindings = findings.filter(f => f.severity !== 'good').length;
+
+  if (hasCritical && score > 25) {
+    console.log(`  🔻 Critical finding detected — capping score from ${score} to 25`);
+    score = 25;
+  } else if (hasHigh && score > 50) {
+    console.log(`  🔻 High severity finding detected — capping score from ${score} to 50`);
+    score = 50;
+  }
+
+  // Systemic risk: many findings indicate generally poor security practices
+  if (totalFindings >= 5) {
+    score -= 15;
+    console.log(`  🔻 Systemic risk penalty (${totalFindings} findings): -15 points`);
   }
 
   // Clamp score to 0-100
