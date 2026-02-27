@@ -27,7 +27,6 @@ Analyze Chrome extensions for security risks, dangerous permissions, and potenti
 | 🧩 **CSP & Content Script Analysis** | Checks for `unsafe-eval`, content script injection, and sensitive domains |
 | 🔗 **Embedded URL Extraction** | Discovers all URLs hidden inside extension source files |
 | 💾 **Scan Caching** | 24-hour cache prevents redundant scans and saves API quota |
-| 🌓 **Light & Dark Themes** | Toggle between themes with persistent preference |
 | 📜 **Raw Manifest Viewer** | Collapsible, syntax-highlighted manifest.json with copy button |
 
 ## 🖥️ Two-Audience Results View
