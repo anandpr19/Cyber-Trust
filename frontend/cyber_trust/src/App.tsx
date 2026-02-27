@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
@@ -10,31 +11,33 @@ import { DashboardPage } from './pages/DashboardPage';
 
 export const App: React.FC = () => {
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col bg-slate-900">
-        <Header />
+    <ThemeProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col bg-slate-900">
+          <Header />
 
-        <main className="flex-1">
-          <Suspense
-            fallback={
-              <div className="flex items-center justify-center min-h-screen">
-                <LoadingSpinner size="lg" />
-              </div>
-            }
-          >
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/upload" element={<UploadPage />} />
-              <Route path="/results" element={<ResultsPage />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </main>
+          <main className="flex-1">
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center min-h-screen">
+                  <LoadingSpinner size="lg" />
+                </div>
+              }
+            >
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/upload" element={<UploadPage />} />
+                <Route path="/results" element={<ResultsPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </main>
 
-        <Footer />
-      </div>
-    </Router>
+          <Footer />
+        </div>
+      </Router>
+    </ThemeProvider>
   );
 };
 

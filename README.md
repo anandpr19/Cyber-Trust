@@ -1,51 +1,70 @@
-# Cyber-Trust 🌐🔒
+<div align="center">
 
-A web application to analyze Chrome extension security. Upload a `.crx` file and get instant insights on permissions, code vulnerabilities, and risk factors.
+# 🔒 Cyber-Trust
 
-## What It Does
+### Chrome Extension Security Analyzer
 
-- **Permission Analysis** - See exactly what data each extension can access
-- **Code Scanning** - Detects eval(), hardcoded credentials, weak encryption, insecure APIs
-- **Trust Score** - Get a 0-100 security rating with color-coded badges
-- **Plain English** - No tech jargon, just clear explanations of what's risky and why
+Analyze Chrome extensions for security risks, dangerous permissions, and potential threats — directly from a Chrome Web Store URL.
 
-## How to Use
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org)
+[![React](https://img.shields.io/badge/React-19-blue.svg)](https://reactjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://typescriptlang.org)
 
-1. Go to the **Analyze** page
-2. Drag & drop a `.crx` file (or click to browse)
-3. Get instant analysis with detailed findings
-4. Review recommendations before installing
+</div>
 
-### Getting a .crx File
+---
 
-Use the [CRXExtractor](https://chromewebstore.google.com/detail/crxextractor/cnchibnhjmccagmccadflmphloijjojf) extension to download `.crx` files from Chrome Web Store.
+## ✨ Features
 
-## Tech Stack
+| Feature | Description |
+|---------|-------------|
+| 🔗 **URL-Based Analysis** | Paste a Chrome Web Store URL or extension ID — no manual downloads needed |
+| 🛡️ **23-Point Permission Scan** | Detects risky permissions with severity ratings (critical/high/medium/low) |
+| 🤖 **AI-Powered TLDR** | Google Gemini generates a plain-English risk summary |
+| 📊 **Public Dashboard** | See recently analyzed extensions, risk distribution, and scan stats |
+| 🔍 **Code Pattern Detection** | Finds `eval()`, hardcoded credentials, `innerHTML`, and insecure HTTP |
+| 🧩 **CSP & Content Script Analysis** | Checks for `unsafe-eval`, content script injection, and sensitive domains |
+| 🔗 **Embedded URL Extraction** | Discovers all URLs hidden inside extension source files |
+| 💾 **Scan Caching** | 24-hour cache prevents redundant scans and saves API quota |
+| 🌓 **Light & Dark Themes** | Toggle between themes with persistent preference |
+| 📜 **Raw Manifest Viewer** | Collapsible, syntax-highlighted manifest.json with copy button |
 
-**Frontend:**
-- React 19 + TypeScript
-- Vite for bundling
-- Tailwind CSS
-- React Router
+## 🖥️ Two-Audience Results View
 
-**Backend:**
-- Node.js + Express
-- TypeScript
-- Mongoose (MongoDB)
-- Axios for downloads
+- **Simple View** — Trust score circle, TLDR, plain-English permissions ("Can read your browsing history"), clear recommendation
+- **Stats for Nerds** — Full findings tabs, permissions breakdown, embedded URLs, raw manifest JSON
 
-**Analysis:**
-- AdmZip for extraction
-- Custom regex patterns for vulnerability detection
-- Permission risk mapping
+---
 
-## Installation
+## 🏗️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React 19, TypeScript, Tailwind CSS 4, Vite 7 |
+| **Backend** | Node.js, Express, TypeScript |
+| **Database** | MongoDB (Mongoose) |
+| **AI** | Google Gemini API |
+| **Scraping** | Cheerio (Chrome Web Store metadata) |
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 16+ and npm
-- MongoDB (optional - falls back to in-memory mode)
 
-### Backend Setup
+- Node.js ≥ 18
+- MongoDB (local or [Atlas](https://www.mongodb.com/atlas))
+- [Google Gemini API key](https://aistudio.google.com/app/apikey) (free tier works)
+
+### 1. Clone
+
+```bash
+git clone https://github.com/anandpr19/Cyber-Trust.git
+cd Cyber-Trust
+```
+
+### 2. Backend Setup
 
 ```bash
 cd backend
@@ -53,142 +72,96 @@ npm install
 ```
 
 Create a `.env` file:
-```
-PORT=4000
+
+```env
+PORT=4001
 MONGO_URI=mongodb://localhost:27017/cyber-trust
-NODE_ENV=development
+GEMINI_API_KEY=your_gemini_api_key_here
+CORS_ORIGIN=http://localhost:3000
 ```
 
-Run development server:
-```bash
-npm run dev
-```
-
-Server runs at `http://localhost:4000`
-
-### Frontend Setup
+### 3. Frontend Setup
 
 ```bash
 cd frontend/cyber_trust
 npm install
 ```
 
-Run development server:
-```bash
-npm run dev
-```
-
-Frontend runs at `http://localhost:3000` (automatically proxies API to `:4000`)
-
-### Build for Production
-
-Backend:
-```bash
-npm run build
-npm start
-```
-
-Frontend:
-```bash
-npm run build
-```
-
-## API Routes
-
-### POST `/api/upload`
-Upload a `.crx` file for analysis.
-
-**Request:**
-```bash
-curl -F "file=@extension.crx" http://localhost:4000/api/upload
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "extensionId": "abc123...",
-  "name": "Google Translate",
-  "version": "1.0.0",
-  "report": {
-    "overallRisk": "LOW",
-    "riskScore": 72,
-    "summary": "Minor security considerations",
-    "categories": { ... },
-    "recommendations": [ ... ]
-  }
-}
-```
-
-### GET `/api/health`
-Check API status and database connection.
+### 4. Run
 
 ```bash
-curl http://localhost:4000/api/health
+# Terminal 1 — Backend
+cd backend && npm run dev
+
+# Terminal 2 — Frontend
+cd frontend/cyber_trust && npm run dev
 ```
 
-## How the Analysis Works
-
-1. **Extract** - Convert CRX format to ZIP and extract files
-2. **Parse Manifest** - Read `manifest.json` for permissions
-3. **Scan Code** - Check all JavaScript/HTML files for risky patterns
-4. **Score** - Deduct points for each risk found (starts at 100)
-5. **Report** - Group findings by severity and generate recommendations
-
-### Risk Scoring
-
-| Score | Risk Level | What It Means |
-|-------|-----------|---------------|
-| 80-100 | 🟢 Safe | No major issues detected |
-| 50-79 | 🟡 Low | Minor permissions or patterns to review |
-| 25-49 | 🔴 Medium | Several risks worth considering |
-| 0-24 | 🔴 High | Significant security concerns |
-
-### What We Check
-
-**Permissions:**
-- Camera, microphone (critical)
-- History, cookies, clipboard (high risk)
-- Web request, geolocation (medium risk)
-- Tabs, management (varies)
-
-**Code Patterns:**
-- `eval()` usage
-- Hardcoded credentials (passwords, API keys)
-- Unencrypted HTTP connections
-- Weak crypto (MD5, SHA1)
-- localStorage for sensitive data
-
-**Deprecated:**
-- Manifest V2 (Chrome dropping support)
-
-## Limitations
-
-⚠️ **This tool provides guidance only, not guarantees.**
-
-- Only performs **static analysis** (doesn't run the extension)
-- Can't detect obfuscated or encrypted malicious code
-- Missing runtime behavior analysis
-- Always do your own research on unfamiliar extensions
-
-## Project Status
-
-🚀 **MVP complete** - Core functionality working
-
-### Upcoming
-- PDF report downloads
-- Batch scanning
-- Version history tracking
-- Browser extension for Chrome Web Store integration
-
-## Contributing
-
-Found an issue or have an idea? [Open an issue](https://github.com/anandpr19/Cyber-Trust/issues) or submit a PR.
-
-## License
-
-MIT - See LICENSE file
+Visit **http://localhost:3000** and paste any Chrome extension URL to analyze.
 
 ---
 
-**Disclaimer:** This tool is for educational and informational purposes. Always exercise caution when installing extensions, regardless of what any tool says.
+## 📂 Project Structure
+
+```
+Cyber-Trust/
+├── backend/
+│   └── src/
+│       ├── controllers/      # scanController, uploadController, dashboardController
+│       ├── models/            # Extension (Mongoose schema)
+│       ├── routes/            # scan, upload, dashboard routes
+│       ├── services/          # analyzer, policyEngine, aiAnalyzer, chromeStoreScraper
+│       └── server.ts          # Express server with CORS, rate limiting
+├── frontend/
+│   └── cyber_trust/
+│       └── src/
+│           ├── components/    # Header, Footer, FindingCard, SimpleView, DetailedView
+│           ├── contexts/      # ThemeContext (dark/light toggle)
+│           ├── hooks/         # useAnalysis, useLocalStorage
+│           ├── pages/         # HomePage, UploadPage, ResultsPage, DashboardPage
+│           ├── services/      # API client
+│           └── types/         # TypeScript interfaces
+└── README.md
+```
+
+---
+
+## 🌐 Deployment
+
+### Frontend → Vercel
+
+| Setting | Value |
+|---------|-------|
+| Root Directory | `frontend/cyber_trust` |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Env Var | `VITE_API_URL=https://your-backend.onrender.com/api` |
+
+### Backend → Render
+
+| Setting | Value |
+|---------|-------|
+| Build Command | `npm install && npm run build` |
+| Start Command | `npm start` |
+| Env Vars | `MONGO_URI`, `GEMINI_API_KEY`, `CORS_ORIGIN=https://your-app.vercel.app` |
+
+---
+
+## 🔒 Security
+
+- **Rate limiting** on all endpoints (scan: 5/min, upload: 10/hr, dashboard: 30/min)
+- **CORS** restricted via `CORS_ORIGIN` environment variable
+- **AI analysis** fails gracefully when API quota is exceeded
+- **No secrets** stored in code — all via environment variables
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ for browser security</p>
+</div>

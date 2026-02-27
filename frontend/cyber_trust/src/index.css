@@ -1,134 +1,590 @@
 @import "tailwindcss";
 
-/* Custom animations */
+/* ─── Theme Variables ─────────────────────────────────── */
+:root {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --scrollbar-track: rgb(15, 23, 42);
+  --scrollbar-thumb: rgb(71, 85, 105);
+  --scrollbar-hover: rgb(100, 116, 139);
+}
+
+html.light {
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --scrollbar-track: #f1f5f9;
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-hover: #94a3b8;
+}
+
+/* ─── Custom Animations ───────────────────────────────── */
 @layer utilities {
-  /* Fade in */
   @keyframes fadeIn {
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
   }
+
   .animate-fade-in {
     animation: fadeIn 0.6s ease-out;
   }
-  /* Fade in with slide up */
+
   @keyframes fadeInUp {
     from {
       opacity: 0;
       transform: translateY(20px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
+
   .animate-fade-in-up {
     animation: fadeInUp 0.5s ease-out forwards;
   }
-  /* Float animation */
+
   @keyframes float {
+
     0%,
     100% {
       transform: translateY(0);
     }
+
     50% {
       transform: translateY(-20px);
     }
   }
+
   .animate-float {
     animation: float 4s ease-in-out infinite;
   }
-  /* Pulse glow */
+
   @keyframes pulseGlow {
+
     0%,
     100% {
       box-shadow: 0 0 0 0 rgb(59, 130, 246, 0.7);
     }
+
     50% {
       box-shadow: 0 0 0 10px rgb(59, 130, 246, 0);
     }
   }
+
   .animate-pulse-glow {
     animation: pulseGlow 2s infinite;
   }
-  /* Bounce subtle */
+
   @keyframes bounceSubtle {
+
     0%,
     100% {
       transform: translateY(0);
     }
+
     50% {
       transform: translateY(-5px);
     }
   }
+
   .animate-bounce-subtle {
     animation: bounceSubtle 2s infinite;
   }
-  /* Expand */
+
   @keyframes expand {
     from {
       max-height: 0;
       opacity: 0;
     }
+
     to {
       max-height: 500px;
       opacity: 1;
     }
   }
+
   .animate-expand {
     animation: expand 0.3s ease-out;
   }
-  /* Smooth scroll */
+
+  /* Shimmer effect for cards on hover */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
   html {
     scroll-behavior: smooth;
   }
-  /* Scrollbar styling */
+
+  /* Scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
   }
+
   ::-webkit-scrollbar-track {
-    background: rgb(15, 23, 42);
+    background: var(--scrollbar-track);
   }
+
   ::-webkit-scrollbar-thumb {
-    background: rgb(71, 85, 105);
+    background: var(--scrollbar-thumb);
     border-radius: 4px;
   }
+
   ::-webkit-scrollbar-thumb:hover {
-    background: rgb(100, 116, 139);
+    background: var(--scrollbar-hover);
   }
-  /* Smooth transitions */
+
+  /* Smooth theme transition on everything */
   * {
-    @apply transition-colors;
+    transition: background-color 0.3s ease, color 0.2s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   }
-  /* Focus styles for accessibility */
+
   button:focus-visible,
   a:focus-visible {
     @apply outline-blue-500 outline-2 outline-offset-2;
   }
 }
-/* Tailwind configuration overrides */
+
+/* ─── Components ──────────────────────────────────────── */
 @layer components {
   .container {
     @apply max-w-7xl;
   }
-  /* Custom scrollbar for Firefox */
+
   * {
-    scrollbar-color: rgb(71, 85, 105) rgb(15, 23, 42);
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
     scrollbar-width: thin;
   }
 }
-/* Body styles */
+
+/* ─── Body ────────────────────────────────────────────── */
 body {
-  @apply bg-slate-900 text-white;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Oxygen', 'Ubuntu',
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-/* Remove focus outline from mouse users */
+
+/* ═══════════════════════════════════════════════════════ */
+/* ═══  LIGHT THEME OVERRIDES (comprehensive)  ═════════ */
+/* ═══════════════════════════════════════════════════════ */
+
+/* ── Page backgrounds ──────────────────────────────────── */
+.light .bg-slate-900 {
+  background-color: #f8fafc;
+}
+
+.light .bg-slate-800 {
+  background-color: #f1f5f9;
+}
+
+.light .bg-slate-700 {
+  background-color: #e2e8f0;
+}
+
+/* Gradient overrides */
+.light .from-slate-900 {
+  --tw-gradient-from: #f8fafc;
+}
+
+.light .via-slate-900 {
+  --tw-gradient-via: #f1f5f9;
+}
+
+.light .to-slate-800 {
+  --tw-gradient-to: #e2e8f0;
+}
+
+.light .bg-gradient-to-b {
+  background: linear-gradient(to bottom, #f8fafc, #f1f5f9, #e2e8f0);
+}
+
+/* ── Card backgrounds (with shadows for depth) ─────────── */
+.light .bg-slate-800\/50 {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.light .bg-slate-800\/40 {
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.light .bg-slate-800\/70 {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.light .bg-slate-800\/30 {
+  background: rgba(241, 245, 249, 0.7);
+}
+
+/* Header & Footer */
+.light .bg-slate-900\/80 {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+}
+
+.light .bg-slate-900\/50 {
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.light .bg-slate-900\/60 {
+  background: rgba(245, 247, 249, 0.85);
+}
+
+/* Misc backgrounds */
+.light .bg-slate-700\/40 {
+  background: rgba(226, 232, 240, 0.5);
+}
+
+.light .bg-slate-700\/60 {
+  background: rgba(226, 232, 240, 0.7);
+}
+
+/* ── Text colors ───────────────────────────────────────── */
+.light .text-white {
+  color: #0f172a;
+}
+
+.light .text-slate-300 {
+  color: #334155;
+}
+
+.light .text-slate-400 {
+  color: #64748b;
+}
+
+.light .text-slate-500 {
+  color: #94a3b8;
+}
+
+/* ── Borders ───────────────────────────────────────────── */
+.light .border-slate-700\/50 {
+  border-color: rgba(203, 213, 225, 0.6);
+}
+
+.light .border-slate-700\/30 {
+  border-color: rgba(203, 213, 225, 0.4);
+}
+
+.light .border-slate-600 {
+  border-color: #cbd5e1;
+}
+
+/* ── Hover states ──────────────────────────────────────── */
+.light .hover\:bg-slate-800:hover {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.light .hover\:bg-slate-700:hover {
+  background-color: #e2e8f0;
+}
+
+.light .hover\:bg-slate-600:hover {
+  background-color: #cbd5e1;
+}
+
+.light .hover\:bg-slate-700\/20:hover {
+  background: rgba(226, 232, 240, 0.35);
+}
+
+.light .hover\:bg-slate-700\/40:hover {
+  background: rgba(226, 232, 240, 0.55);
+}
+
+.light .hover\:text-white:hover {
+  color: #0f172a;
+}
+
+/* ── Colored card backgrounds (keep tinted, lighter) ──── */
+/* Blue */
+.light .bg-blue-900\/20,
+.light .from-blue-900\/20 {
+  background: rgba(219, 234, 254, 0.5);
+}
+
+/* Purple / AI */
+.light .bg-purple-900\/15,
+.light .from-purple-900\/15,
+.light .from-purple-900\/20 {
+  background: rgba(233, 213, 255, 0.35);
+}
+
+.light .to-indigo-900\/15,
+.light .to-indigo-900\/20,
+.light .to-purple-900\/20 {
+  background: transparent;
+}
+
+.light .bg-purple-500\/10 {
+  background: rgba(168, 85, 247, 0.12);
+}
+
+.light .border-purple-700\/20 {
+  border-color: rgba(168, 85, 247, 0.15);
+}
+
+.light .bg-gradient-to-br.from-purple-900\/15,
+.light .bg-gradient-to-br.from-purple-900\/20 {
+  background: linear-gradient(135deg, rgba(233, 213, 255, 0.35), rgba(224, 231, 255, 0.3));
+}
+
+/* Green */
+.light .bg-green-900\/20 {
+  background: rgba(220, 252, 231, 0.5);
+}
+
+.light .bg-green-900\/25 {
+  background: rgba(220, 252, 231, 0.6);
+}
+
+/* Red */
+.light .bg-red-900\/20 {
+  background: rgba(254, 226, 226, 0.5);
+}
+
+.light .bg-red-900\/30 {
+  background: rgba(254, 226, 226, 0.6);
+}
+
+/* Orange */
+.light .bg-orange-900\/30 {
+  background: rgba(255, 237, 213, 0.5);
+}
+
+/* Amber */
+.light .bg-amber-900\/20 {
+  background: rgba(254, 243, 199, 0.5);
+}
+
+.light .bg-amber-900\/25 {
+  background: rgba(254, 243, 199, 0.55);
+}
+
+/* Cyan */
+.light .bg-cyan-900\/10 {
+  background: rgba(207, 250, 254, 0.4);
+}
+
+/* Blue accent */
+.light .bg-blue-500\/10 {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.light .bg-blue-600 {
+  background-color: #3b82f6;
+}
+
+/* ── Colored borders (softer in light) ─────────────────── */
+.light .border-blue-600\/30 {
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.light .border-purple-600\/30 {
+  border-color: rgba(168, 85, 247, 0.2);
+}
+
+.light .border-green-600\/30 {
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.light .border-red-600\/30 {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.light .border-red-600\/40 {
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.light .border-red-600\/50 {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.light .border-amber-600\/30 {
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.light .border-amber-600\/40 {
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.light .border-orange-600\/40 {
+  border-color: rgba(249, 115, 22, 0.25);
+}
+
+.light .border-cyan-600\/30 {
+  border-color: rgba(6, 182, 212, 0.2);
+}
+
+/* ── Buttons: keep blue buttons white text ─────────────── */
+.light .bg-blue-600 .text-white,
+.light .bg-gradient-to-r .text-white,
+.light .from-blue-600 .text-white,
+.light [class*="bg-blue-6"] {
+  color: white !important;
+}
+
+.light button.bg-gradient-to-r {
+  color: white !important;
+}
+
+/* Toggle active state should keep white text */
+.light .bg-gradient-to-r.from-blue-600 {
+  color: white;
+}
+
+.light .shadow-lg.shadow-blue-500\/20 {
+  color: white !important;
+}
+
+/* ── Input fields ──────────────────────────────────────── */
+.light input,
+.light textarea {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.light input::placeholder,
+.light textarea::placeholder {
+  color: #94a3b8;
+}
+
+.light input:focus,
+.light textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* ── Code/pre blocks ───────────────────────────────────── */
+.light pre {
+  background: rgba(241, 245, 249, 0.9) !important;
+  border-color: rgba(203, 213, 225, 0.5) !important;
+  color: #334155 !important;
+}
+
+/* ── Table ─────────────────────────────────────────────── */
+.light table th {
+  color: #475569;
+}
+
+.light table td {
+  color: #334155;
+}
+
+/* ── Interactive card hover effect ─────────────────────── */
+.light .hover\:-translate-y-1:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* ═══  PRESERVE COLORS (don't override)  ══════════════ */
+/* ═══════════════════════════════════════════════════════ */
+
+/* Severity text colors must stay vibrant for readability */
+.light .text-red-400 {
+  color: #dc2626;
+}
+
+.light .text-red-200 {
+  color: #b91c1c;
+}
+
+.light .text-orange-400 {
+  color: #ea580c;
+}
+
+.light .text-amber-200 {
+  color: #b45309;
+}
+
+.light .text-amber-300 {
+  color: #d97706;
+}
+
+.light .text-amber-300\/90 {
+  color: #b45309;
+}
+
+.light .text-yellow-400 {
+  color: #ca8a04;
+}
+
+.light .text-green-400 {
+  color: #16a34a;
+}
+
+.light .text-green-200 {
+  color: #15803d;
+}
+
+.light .text-blue-200 {
+  color: #1d4ed8;
+}
+
+.light .text-purple-200 {
+  color: #7c3aed;
+}
+
+.light .text-purple-400 {
+  color: #9333ea;
+}
+
+.light .text-purple-500 {
+  color: #7c3aed;
+}
+
+.light .text-cyan-200 {
+  color: #0891b2;
+}
+
+.light .text-cyan-300 {
+  color: #0891b2;
+}
+
+.light .text-cyan-300\/80 {
+  color: #0e7490;
+}
+
+.light .text-cyan-400 {
+  color: #06b6d4;
+}
+
+.light .text-blue-400 {
+  color: #2563eb;
+}
+
+.light .hover\:text-blue-300:hover {
+  color: #1d4ed8;
+}
+
+/* Badge text stays readable on light bg */
+.light .text-blue-200 {
+  color: #1d4ed8;
+}
+
+/* ═══════════════════════════════════════════════════════ */
+
 html.no-focus-outline *:focus {
   outline: none;
 }
