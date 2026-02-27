@@ -3,7 +3,7 @@ import axios from 'axios';
 const CHROME_VERSION = '131.0.6778.86';
 
 async function fetchFromGoogleWebStore(extensionId: string): Promise<Buffer> {
-  const url = `https://clients2.google.com/service/update2/crx?response=redirect&x=id%3D${extensionId}%26uc&prodversion=${CHROME_VERSION}`;
+  const url = `https://clients2.google.com/service/update2/crx?response=redirect&acceptformat=crx2,crx3&x=id%3D${extensionId}%26installsource%3Dondemand%26uc&prodversion=${CHROME_VERSION}`;
 
   console.log(`🔗 Fetching from Google Web Store: ${extensionId}`);
 
@@ -61,7 +61,7 @@ async function fetchFromMirror(extensionId: string): Promise<Buffer> {
         responseType: 'arraybuffer'
       } as any);
 
-      if (response.data && (response.data as Buffer).length > 100) {
+      if (response.data && (response.data as Buffer).length > 1000) {
         console.log(`✅ Downloaded from mirror: ${(response.data as Buffer).length} bytes`);
         return Buffer.from(response.data as any);
       }

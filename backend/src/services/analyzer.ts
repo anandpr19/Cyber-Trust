@@ -6,6 +6,62 @@ export interface AnalysisResult {
   files: Record<string, string>;
   score: number;
   findings: any[];
+  embeddedUrls: string[];
+}
+
+// URLs to filter out as false positives (standard/expected)
+const URL_FILTER_PATTERNS = [
+  'chromium.org',
+  'w3.org',
+  'www.w3.org',
+  'schema.org',
+  'googleapis.com/css',
+  'fonts.googleapis.com',
+  'fonts.gstatic.com',
+  'developer.mozilla.org',
+  'developer.chrome.com',
+  'chrome.google.com/webstore',
+  'creativecommons.org',
+  'spdx.org',
+  'opensource.org',
+  'github.com/nicedoc',
+  'webpack.js.org',
+  'babeljs.io',
+  'reactjs.org',
+  'nodejs.org',
+  'npmjs.org',
+  'unpkg.com',
+  'cdnjs.cloudflare.com',
+];
+
+const URL_REGEX = /https?:\/\/[^\s'"<>)\]},;]+/g;
+
+function extractUrlsFromFiles(files: Record<string, string>): string[] {
+  const urlSet = new Set<string>();
+
+  Object.entries(files).forEach(([filename, content]) => {
+    // Skip binary files and non-code files
+    if (!filename.match(/\.(js|html|json|css|ts|jsx|tsx|mjs|cjs)$/i)) return;
+
+    const matches = content.match(URL_REGEX);
+    if (matches) {
+      matches.forEach((url) => {
+        // Clean trailing punctuation
+        let cleaned = url.replace(/[.,;:!?)}\]]+$/, '');
+
+        // Filter out standard/expected URLs
+        const isFiltered = URL_FILTER_PATTERNS.some(pattern =>
+          cleaned.toLowerCase().includes(pattern)
+        );
+
+        if (!isFiltered && cleaned.length > 10) {
+          urlSet.add(cleaned);
+        }
+      });
+    }
+  });
+
+  return Array.from(urlSet).sort();
 }
 
 export async function analyzeBufferZip(zipBuffer: Buffer): Promise<AnalysisResult> {
@@ -56,6 +112,11 @@ export async function analyzeBufferZip(zipBuffer: Buffer): Promise<AnalysisResul
     throw new Error('manifest.json not found in extension');
   }
 
+  // Extract embedded URLs from all files
+  console.log('🔗 Extracting embedded URLs...');
+  const embeddedUrls = extractUrlsFromFiles(files);
+  console.log(`  Found ${embeddedUrls.length} unique URLs`);
+
   console.log('🔐 Evaluating security policies...');
   const { score, findings } = evaluatePolicies(manifest, files);
 
@@ -63,6 +124,7 @@ export async function analyzeBufferZip(zipBuffer: Buffer): Promise<AnalysisResul
     manifest,
     files,
     score,
-    findings
+    findings,
+    embeddedUrls
   };
 }

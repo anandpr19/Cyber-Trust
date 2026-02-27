@@ -19,6 +19,7 @@ export const Header: React.FC = () => {
           <nav className="hidden md:flex items-center gap-8">
             <Link to="/" className="text-slate-300 hover:text-white transition-colors">Home</Link>
             <Link to="/upload" className="text-slate-300 hover:text-white transition-colors">Analyze</Link>
+            <Link to="/dashboard" className="text-slate-300 hover:text-white transition-colors">Dashboard</Link>
             <a
               href="https://github.com/anandpr19/Cyber-Trust"
               target="_blank"

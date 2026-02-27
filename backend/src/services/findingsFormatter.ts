@@ -1,11 +1,12 @@
 export interface RawFinding {
-  type: 'permission' | 'host-permission' | 'code-pattern' | 'deprecated' | 'info';
+  type: 'permission' | 'host-permission' | 'code-pattern' | 'deprecated' | 'info' | 'content-script' | 'csp' | 'sensitive-domain' | 'permission-combo';
   severity: 'critical' | 'high' | 'medium' | 'low' | 'good';
   description: string;
   permission?: string;
   pattern?: string;
   file?: string;
   value?: string;
+  domains?: string[];
 }
 
 export interface GroupedFinding {
@@ -69,6 +70,18 @@ const PATTERN_EXPLANATIONS: Record<string, { title: string; explanation: string;
     title: '💾 Insecure Local Storage',
     explanation:
       'This extension stores data in localStorage, which is not encrypted. Anyone with access to your browser data can read it. Use secure storage mechanisms instead.',
+    severity: 'MEDIUM'
+  },
+  'document-write': {
+    title: '📝 Uses document.write()',
+    explanation:
+      'This extension uses document.write(), which can be exploited for XSS attacks and can cause unexpected page behavior. Modern alternatives like DOM manipulation methods should be used instead.',
+    severity: 'MEDIUM'
+  },
+  'innerHTML-assignment': {
+    title: '⚠️ innerHTML Assignment',
+    explanation:
+      'This extension assigns to innerHTML, which is a potential XSS vector if user input is involved. Use textContent or DOM methods for safer alternatives.',
     severity: 'MEDIUM'
   }
 };
@@ -143,6 +156,78 @@ const PERMISSION_EXPLANATIONS: Record<
     explanation: 'This extension can manage other extensions.',
     risk: 'Could disable security extensions or install malware',
     severity: 'CRITICAL'
+  },
+  debugger: {
+    title: '🐛 Debugger Access',
+    explanation: 'This extension can debug and manipulate other extensions and apps.',
+    risk: 'Extremely powerful - can intercept and modify any extension behavior',
+    severity: 'CRITICAL'
+  },
+  proxy: {
+    title: '🔀 Proxy Control',
+    explanation: 'This extension can control proxy settings.',
+    risk: 'Could route traffic through malicious servers',
+    severity: 'HIGH'
+  },
+  webNavigation: {
+    title: '🧭 Web Navigation Tracking',
+    explanation: 'This extension can track your page navigations and URL changes.',
+    risk: 'Can monitor all page transitions in detail',
+    severity: 'HIGH'
+  },
+  downloads: {
+    title: '📥 Download Access',
+    explanation: 'This extension can download files and access download history.',
+    risk: 'Could download malicious files or expose download activity',
+    severity: 'HIGH'
+  },
+  privacy: {
+    title: '🔐 Privacy Settings',
+    explanation: 'This extension can modify browser privacy settings.',
+    risk: 'Could weaken privacy protections',
+    severity: 'HIGH'
+  },
+  identity: {
+    title: '🆔 Identity Access',
+    explanation: 'This extension can access your identity information and OAuth tokens.',
+    risk: 'Could access authentication tokens for linked accounts',
+    severity: 'HIGH'
+  },
+  bookmarks: {
+    title: '🔖 Bookmark Access',
+    explanation: 'This extension can access and modify your bookmarks.',
+    risk: 'Can read all bookmarks and potentially redirect saved links',
+    severity: 'HIGH'
+  },
+  notifications: {
+    title: '🔔 Notification Access',
+    explanation: 'This extension can show desktop notifications.',
+    risk: 'Could be used for social engineering or phishing attempts',
+    severity: 'MEDIUM'
+  },
+  unlimitedStorage: {
+    title: '💿 Unlimited Storage',
+    explanation: 'This extension can store unlimited data locally.',
+    risk: 'Unusual requirement - could be used for data exfiltration staging',
+    severity: 'MEDIUM'
+  },
+  activeTab: {
+    title: '🔲 Active Tab Access',
+    explanation: 'This extension can access the active tab when you click its icon.',
+    risk: 'Limited access - only active tab on click',
+    severity: 'LOW'
+  },
+  storage: {
+    title: '💾 Storage Access',
+    explanation: 'This extension can store data locally using Chrome storage API.',
+    risk: 'Generally safe - standard extension functionality',
+    severity: 'LOW'
+  },
+  contextMenus: {
+    title: '📋 Context Menu Access',
+    explanation: 'This extension can add items to the right-click context menu.',
+    risk: 'Generally safe - common functionality',
+    severity: 'MEDIUM'
   }
 };
 
@@ -246,6 +331,42 @@ function convertToGroupedFindings(rawFindings: RawFinding[]): {
         explanation: 'This extension uses Manifest V2, which is deprecated and will stop working soon. Update to V3.',
         count,
         icon: '⚠️'
+      };
+    } else if (finding.type === 'content-script') {
+      groupedFinding = {
+        category: 'Content Script Injection',
+        severity: finding.severity,
+        title: '💉 Broad Content Script Injection',
+        explanation: finding.description,
+        count,
+        icon: '⛔'
+      };
+    } else if (finding.type === 'csp') {
+      groupedFinding = {
+        category: 'Content Security Policy',
+        severity: finding.severity,
+        title: `🛡️ CSP Issue: ${finding.value || 'Unknown'}`,
+        explanation: finding.description,
+        count,
+        icon: '⚠️'
+      };
+    } else if (finding.type === 'sensitive-domain') {
+      groupedFinding = {
+        category: 'Sensitive Domain Access',
+        severity: finding.severity,
+        title: '🏦 Access to Sensitive Domains',
+        explanation: finding.description,
+        count,
+        icon: '⚠️'
+      };
+    } else if (finding.type === 'permission-combo') {
+      groupedFinding = {
+        category: 'Dangerous Permission Combination',
+        severity: finding.severity,
+        title: '🔗 Dangerous Permission Combo',
+        explanation: finding.description,
+        count,
+        icon: '⛔'
       };
     }
 

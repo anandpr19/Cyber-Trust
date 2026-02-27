@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { analyzeBufferZip } from '../services/analyzer';
 import { formatFindingsForUsers } from '../services/findingsFormatter';
+import { analyzeWithAI } from '../services/aiAnalyzer';
 import Extension from '../models/Extension';
 
 function crxToZipBuffer(buf: Buffer): Buffer {
@@ -111,8 +112,17 @@ export const handleUpload = async (req: Request, res: Response): Promise<void> =
 
     console.log(`✅ Analysis complete. Score: ${analysis.score}`);
 
-    //Format findings for frontend
+    // Format findings for frontend
     const userFriendlyReport = formatFindingsForUsers(analysis.findings, analysis.score);
+
+    // AI Analysis
+    const extensionName = analysis.manifest.name || extensionId;
+    const aiAnalysis = await analyzeWithAI(
+      analysis.manifest,
+      analysis.findings,
+      null,
+      extensionName
+    );
 
     let saved = false;
     let dbError: string | null = null;
@@ -120,11 +130,13 @@ export const handleUpload = async (req: Request, res: Response): Promise<void> =
     try {
       const ext = new Extension({
         extensionId,
-        name: analysis.manifest.name || extensionId,
+        name: extensionName,
         version: analysis.manifest.version || 'unknown',
         manifest: analysis.manifest,
         score: analysis.score,
         findings: analysis.findings,
+        embeddedUrls: analysis.embeddedUrls,
+        aiAnalysis: aiAnalysis || undefined,
         sourceUrl: req.body.sourceUrl || null
       });
 
@@ -137,25 +149,29 @@ export const handleUpload = async (req: Request, res: Response): Promise<void> =
       dbError = msg;
     }
 
-    // Return both raw findings (for reference) and user-friendly report
+    // Return both raw findings and user-friendly report
     res.status(200).json({
       success: true,
+      cached: false,
       extensionId,
-      name: analysis.manifest.name || extensionId,
+      name: extensionName,
       version: analysis.manifest.version || 'unknown',
-      
+
       // User-friendly report 
       report: userFriendlyReport,
-      
-      //raw data for reference
+
+      // Raw data for reference
       rawData: {
         manifest: analysis.manifest,
         score: analysis.score,
         findings: analysis.findings,
         fileSize: buf.length,
-        zipSize: zipBuf.length
+        zipSize: zipBuf.length,
+        embeddedUrls: analysis.embeddedUrls,
       },
-      
+
+      storeMetadata: null,
+      aiAnalysis: aiAnalysis || null,
       savedToDb: saved,
       dbError: dbError || undefined,
       timestamp: new Date().toISOString()

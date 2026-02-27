@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import { fetchExtensionCRX, extractExtensionId } from '../services/fetchExtension';
 import { analyzeBufferZip } from '../services/analyzer';
+import { formatFindingsForUsers } from '../services/findingsFormatter';
+import { scrapeStoreMetadata } from '../services/chromeStoreScraper';
+import { analyzeWithAI } from '../services/aiAnalyzer';
 import Extension from '../models/Extension';
 
 function crxToZipBuffer(buf: Buffer): Buffer {
@@ -66,7 +69,7 @@ export const scanExtension = async (req: Request, res: Response): Promise<void> 
   let zipBuffer: Buffer | null = null;
 
   try {
-    const { extensionId, url } = req.body;
+    const { extensionId, url, force } = req.body;
 
     if (!extensionId && !url) {
       res.status(400).json({
@@ -81,9 +84,49 @@ export const scanExtension = async (req: Request, res: Response): Promise<void> 
     }
 
     const input = extensionId || url;
+    const parsedId = extractExtensionId(input);
 
-    console.log(`\n📥 Scan request: ${input}`);
+    console.log(`\n📥 Scan request: ${input} (ID: ${parsedId})`);
 
+    // ── Scan Caching: Check for recent result ──
+    try {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const cachedResult = await Extension.findOne({
+        extensionId: parsedId,
+        scannedAt: { $gte: twentyFourHoursAgo }
+      }).sort({ scannedAt: -1 });
+
+      if (cachedResult && force !== 'true' && force !== true) {
+        console.log('📦 Returning cached result (scanned within 24 hours)');
+        res.status(200).json({
+          success: true,
+          cached: true,
+          extensionId: cachedResult.extensionId,
+          name: cachedResult.name,
+          version: cachedResult.version,
+          report: formatFindingsForUsers(cachedResult.findings, cachedResult.score),
+          rawData: {
+            manifest: cachedResult.manifest,
+            score: cachedResult.score,
+            findings: cachedResult.findings,
+            embeddedUrls: (cachedResult as any).embeddedUrls || [],
+          },
+          storeMetadata: (cachedResult as any).storeMetadata || null,
+          aiAnalysis: (cachedResult as any).aiAnalysis || null,
+          savedToDb: true,
+          lastScanned: cachedResult.scannedAt,
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+    } catch (cacheErr) {
+      console.warn('⚠️ Cache check failed, proceeding with fresh analysis');
+    }
+
+    // ── Scrape Chrome Web Store metadata ──
+    const storeMetadata = await scrapeStoreMetadata(parsedId);
+
+    // ── Download CRX ──
     try {
       crxBuffer = await fetchExtensionCRX(input);
     } catch (err) {
@@ -108,22 +151,35 @@ export const scanExtension = async (req: Request, res: Response): Promise<void> 
 
     console.log('🔍 Starting analysis...');
     const analysis = await analyzeBufferZip(zipBuffer);
-
     console.log(`✅ Analysis complete. Score: ${analysis.score}`);
 
+    // ── AI Analysis ──
+    const extensionName = storeMetadata?.name || analysis.manifest.name || 'Unknown';
+    const aiAnalysis = await analyzeWithAI(
+      analysis.manifest,
+      analysis.findings,
+      storeMetadata,
+      extensionName
+    );
+
+    // ── Format findings for frontend ──
+    const userFriendlyReport = formatFindingsForUsers(analysis.findings, analysis.score);
+
+    // ── Save to database ──
     let saved = false;
     let dbError: string | null = null;
 
     try {
-      const parsedId = extractExtensionId(input);
-
       const ext = new Extension({
         extensionId: parsedId,
-        name: analysis.manifest.name || 'Unknown',
+        name: extensionName,
         version: analysis.manifest.version || 'unknown',
         manifest: analysis.manifest,
         score: analysis.score,
         findings: analysis.findings,
+        embeddedUrls: analysis.embeddedUrls,
+        storeMetadata: storeMetadata || undefined,
+        aiAnalysis: aiAnalysis || undefined,
         sourceUrl: url || null
       });
 
@@ -138,14 +194,21 @@ export const scanExtension = async (req: Request, res: Response): Promise<void> 
 
     res.status(200).json({
       success: true,
-      extensionId: extractExtensionId(input),
-      name: analysis.manifest.name || 'Unknown',
+      cached: false,
+      extensionId: parsedId,
+      name: extensionName,
       version: analysis.manifest.version || 'unknown',
-      manifest: analysis.manifest,
-      score: analysis.score,
-      findings: analysis.findings,
-      crxSize: crxBuffer.length,
-      zipSize: zipBuffer.length,
+      report: userFriendlyReport,
+      rawData: {
+        manifest: analysis.manifest,
+        score: analysis.score,
+        findings: analysis.findings,
+        crxSize: crxBuffer.length,
+        zipSize: zipBuffer.length,
+        embeddedUrls: analysis.embeddedUrls,
+      },
+      storeMetadata: storeMetadata || null,
+      aiAnalysis: aiAnalysis || null,
       savedToDb: saved,
       dbError: dbError || undefined,
       timestamp: new Date().toISOString()

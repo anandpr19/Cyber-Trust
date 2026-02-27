@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { AnalysisResult } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4001/api';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -58,13 +58,17 @@ class ApiClient {
   }
 
   /**
-   * Scan extension by ID (requires backend support)
+   * Scan extension by ID or Chrome Web Store URL
    */
-  async scanExtensionId(extensionId: string): Promise<AnalysisResult> {
+  async scanExtension(input: string, force: boolean = false): Promise<AnalysisResult> {
     try {
-      const response = await this.client.post<AnalysisResult>('/scan', {
-        extensionId
-      });
+      // Detect if input is a URL or an extension ID
+      const isUrl = input.startsWith('http://') || input.startsWith('https://');
+      const payload = isUrl
+        ? { url: input, force: force ? 'true' : undefined }
+        : { extensionId: input.trim(), force: force ? 'true' : undefined };
+
+      const response = await this.client.post<AnalysisResult>('/scan', payload);
 
       return response.data;
     } catch (error) {
@@ -83,6 +87,18 @@ class ApiClient {
       return response.data;
     } catch (error) {
       throw new Error(`API health check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get public dashboard stats
+   */
+  async getDashboard(): Promise<any> {
+    try {
+      const response = await this.client.get('/dashboard');
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to load dashboard: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }

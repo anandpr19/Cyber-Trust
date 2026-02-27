@@ -7,14 +7,18 @@ import { Card } from '../components/common/Card';
 import { Toast } from '../components/common/Toast';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
+type TabMode = 'upload' | 'url';
+
 export const UploadPage: React.FC = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const hasNavigatedRef = useRef(false);
+    const [activeTab, setActiveTab] = useState<TabMode>('url');
+    const [urlInput, setUrlInput] = useState('');
 
-    const { result, isLoading, error, uploadFile } = useAnalysis();
+    const { result, isLoading, error, uploadFile, scanById } = useAnalysis();
     const { analyses, saveAnalysis } = useLocalStorage();
 
     // Handle file selection
@@ -28,6 +32,28 @@ export const UploadPage: React.FC = () => {
             await uploadFile(file);
         } catch {
             setToast({ message: 'Failed to analyze extension', type: 'error' });
+        }
+    };
+
+    // Handle URL/ID scan
+    const handleUrlScan = async () => {
+        const input = urlInput.trim();
+        if (!input) {
+            setToast({ message: 'Please enter a Chrome Web Store URL or Extension ID', type: 'error' });
+            return;
+        }
+
+        try {
+            await scanById(input);
+        } catch {
+            setToast({ message: 'Failed to scan extension', type: 'error' });
+        }
+    };
+
+    // Handle Enter key in URL input
+    const handleUrlKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && !isLoading) {
+            handleUrlScan();
         }
     };
 
@@ -83,56 +109,146 @@ export const UploadPage: React.FC = () => {
         <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pt-24 pb-12">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="space-y-12">
-                    {/* Upload Area */}
+                    {/* Header */}
                     <div className="animate-fade-in">
                         <h1 className="text-4xl font-bold text-white mb-2">Analyze Your Extension</h1>
                         <p className="text-slate-400 mb-8">
-                            Upload a .crx file to get instant security analysis
+                            Enter a Chrome Web Store URL or upload a .crx file to get instant security analysis
                         </p>
 
-                        {/* Upload Box */}
-                        <div
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                            className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 ${
-                                isDragging
-                                    ? 'border-blue-500 bg-blue-500/10 scale-105'
-                                    : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
-                            } ${isLoading ? 'pointer-events-none opacity-75' : 'cursor-pointer'}`}
-                        >
-                            {/* Hidden File Input */}
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept=".crx"
-                                onChange={handleInputChange}
-                                className="hidden"
-                                disabled={isLoading}
-                            />
+                        {/* Tab Switcher */}
+                        <div className="flex rounded-xl bg-slate-800/60 p-1.5 mb-6 border border-slate-700/50">
+                            <button
+                                onClick={() => setActiveTab('url')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300 ${activeTab === 'url'
+                                        ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/20'
+                                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                                    }`}
+                            >
+                                <span>🔗</span>
+                                <span>URL / Extension ID</span>
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('upload')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-300 ${activeTab === 'upload'
+                                        ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/20'
+                                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                                    }`}
+                            >
+                                <span>📦</span>
+                                <span>Upload .crx File</span>
+                            </button>
+                        </div>
 
-                            {isLoading ? (
-                                <div className="space-y-4">
-                                    <LoadingSpinner size="lg" color="text-blue-500" />
-                                    <p className="text-slate-300">Analyzing extension...</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    <div className="text-6xl animate-float">📦</div>
-                                    <div>
-                                        <p className="text-lg font-semibold text-white">Drag & drop your .crx file here</p>
-                                        <p className="text-slate-400">or click to browse</p>
+                        {/* URL/ID Input Tab */}
+                        {activeTab === 'url' && (
+                            <div className="space-y-4 animate-fade-in">
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <span className="text-slate-400 text-lg">🔍</span>
                                     </div>
+                                    <input
+                                        id="url-input"
+                                        type="text"
+                                        value={urlInput}
+                                        onChange={(e) => setUrlInput(e.target.value)}
+                                        onKeyDown={handleUrlKeyDown}
+                                        placeholder="Paste Chrome Web Store URL or Extension ID (e.g. aapbdbdomjkkjkaonfhkkikfgjllcleb)"
+                                        disabled={isLoading}
+                                        className="w-full pl-12 pr-4 py-4 bg-slate-800/80 border-2 border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-base disabled:opacity-50"
+                                    />
+                                </div>
+
+                                <div className="flex gap-3">
                                     <Button
                                         variant="primary"
-                                        size="md"
-                                        onClick={() => fileInputRef.current?.click()}
+                                        size="lg"
+                                        isLoading={isLoading}
+                                        disabled={isLoading || !urlInput.trim()}
+                                        onClick={handleUrlScan}
+                                        className="flex-1"
                                     >
-                                        Select File
+                                        {isLoading ? 'Analyzing...' : '🛡️ Analyze Extension'}
                                     </Button>
                                 </div>
-                            )}
-                        </div>
+
+                                {isLoading && (
+                                    <div className="flex items-center gap-3 p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                                        <LoadingSpinner size="md" color="text-blue-500" />
+                                        <div>
+                                            <p className="text-slate-200 font-medium">Analyzing extension...</p>
+                                            <p className="text-slate-400 text-sm">Downloading, scanning, and generating AI report</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Example URLs */}
+                                <div className="mt-4 p-4 bg-slate-800/30 rounded-xl border border-slate-700/30">
+                                    <p className="text-slate-400 text-xs font-medium mb-2">EXAMPLES — click to try:</p>
+                                    <div className="space-y-1.5">
+                                        {[
+                                            { label: 'Google Translate', id: 'aapbdbdomjkkjkaonfhkkikfgjllcleb' },
+                                            { label: 'React DevTools', id: 'fmkadmapgofadopljbjfkapdkoienihi' },
+                                            { label: 'Full URL', id: 'https://chromewebstore.google.com/detail/google-translate/aapbdbdomjkkjkaonfhkkikfgjllcleb' },
+                                        ].map((example) => (
+                                            <button
+                                                key={example.id}
+                                                onClick={() => setUrlInput(example.id)}
+                                                className="block w-full text-left text-xs text-blue-400 hover:text-blue-300 transition-colors truncate"
+                                            >
+                                                <span className="text-slate-500">{example.label}: </span>
+                                                {example.id}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* File Upload Tab */}
+                        {activeTab === 'upload' && (
+                            <div
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                                className={`border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 ${isDragging
+                                        ? 'border-blue-500 bg-blue-500/10 scale-105'
+                                        : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                                    } ${isLoading ? 'pointer-events-none opacity-75' : 'cursor-pointer'}`}
+                            >
+                                {/* Hidden File Input */}
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".crx"
+                                    onChange={handleInputChange}
+                                    className="hidden"
+                                    disabled={isLoading}
+                                />
+
+                                {isLoading ? (
+                                    <div className="space-y-4">
+                                        <LoadingSpinner size="lg" color="text-blue-500" />
+                                        <p className="text-slate-300">Analyzing extension...</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <div className="text-6xl animate-float">📦</div>
+                                        <div>
+                                            <p className="text-lg font-semibold text-white">Drag & drop your .crx file here</p>
+                                            <p className="text-slate-400">or click to browse</p>
+                                        </div>
+                                        <Button
+                                            variant="primary"
+                                            size="md"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            Select File
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Error Display */}
@@ -185,9 +301,15 @@ export const UploadPage: React.FC = () => {
                         <div className="flex gap-3">
                             <span className="text-2xl">ℹ️</span>
                             <div>
-                                <h3 className="font-semibold text-blue-200">How to get a .crx file</h3>
+                                <h3 className="font-semibold text-blue-200">How it works</h3>
                                 <p className="text-blue-300 text-sm mt-2">
-                                    Use the CRXExtractor extension from the Chrome Web Store to download .crx files from Chrome extension pages.
+                                    <strong>URL/ID method:</strong> Paste a Chrome Web Store URL or extension ID. We'll automatically
+                                    download the extension, analyze its permissions, scan its code, and generate an AI-powered
+                                    security report.
+                                </p>
+                                <p className="text-blue-300 text-sm mt-2">
+                                    <strong>File upload:</strong> If you have a .crx file, switch to the upload tab and drag-drop
+                                    it for analysis.
                                 </p>
                             </div>
                         </div>

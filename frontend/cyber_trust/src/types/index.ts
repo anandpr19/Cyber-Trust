@@ -3,13 +3,14 @@
  */
 
 export interface Finding {
-  type: 'permission' | 'host-permission' | 'code-pattern' | 'deprecated' | 'info';
+  type: 'permission' | 'host-permission' | 'code-pattern' | 'deprecated' | 'info' | 'content-script' | 'csp' | 'sensitive-domain' | 'permission-combo';
   severity: 'critical' | 'high' | 'medium' | 'low' | 'good';
   description: string;
   permission?: string;
   pattern?: string;
   file?: string;
   value?: string;
+  domains?: string[];
 }
 
 export interface GroupedFinding {
@@ -37,8 +38,26 @@ export interface FindingsReport {
   recommendations: string[];
 }
 
+export interface StoreMetadata {
+  name: string;
+  icon: string;
+  rating: string;
+  ratingCount: string;
+  users: string;
+  size: string;
+  author: string;
+  lastUpdated: string;
+  storeUrl: string;
+}
+
+export interface AIAnalysis {
+  summary: string;
+  riskLevel: string;
+}
+
 export interface AnalysisResult {
   success: boolean;
+  cached: boolean;
   extensionId: string;
   name: string;
   version: string;
@@ -47,10 +66,15 @@ export interface AnalysisResult {
     manifest: Record<string, unknown>;
     score: number;
     findings: Finding[];
-    fileSize: number;
-    zipSize: number;
+    fileSize?: number;
+    zipSize?: number;
+    crxSize?: number;
+    embeddedUrls: string[];
   };
+  storeMetadata: StoreMetadata | null;
+  aiAnalysis: AIAnalysis | null;
   savedToDb: boolean;
+  lastScanned?: string;
   timestamp: string;
 }
 
