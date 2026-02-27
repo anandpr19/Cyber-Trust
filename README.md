@@ -27,7 +27,6 @@ Analyze Chrome extensions for security risks, dangerous permissions, and potenti
 | 🧩 **CSP & Content Script Analysis** | Checks for `unsafe-eval`, content script injection, and sensitive domains |
 | 🔗 **Embedded URL Extraction** | Discovers all URLs hidden inside extension source files |
 | 💾 **Scan Caching** | 24-hour cache prevents redundant scans and saves API quota |
-| 🌓 **Light & Dark Themes** | Toggle between themes with persistent preference |
 | 📜 **Raw Manifest Viewer** | Collapsible, syntax-highlighted manifest.json with copy button |
 
 ## 🖥️ Two-Audience Results View
@@ -123,27 +122,6 @@ Cyber-Trust/
 │           └── types/         # TypeScript interfaces
 └── README.md
 ```
-
----
-
-## 🌐 Deployment
-
-### Frontend → Vercel
-
-| Setting | Value |
-|---------|-------|
-| Root Directory | `frontend/cyber_trust` |
-| Build Command | `npm run build` |
-| Output Directory | `dist` |
-| Env Var | `VITE_API_URL=https://your-backend.onrender.com/api` |
-
-### Backend → Render
-
-| Setting | Value |
-|---------|-------|
-| Build Command | `npm install && npm run build` |
-| Start Command | `npm start` |
-| Env Vars | `MONGO_URI`, `GEMINI_API_KEY`, `CORS_ORIGIN=https://your-app.vercel.app` |
 
 ---
 
