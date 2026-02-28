@@ -2,7 +2,7 @@ import React from 'react';
 
 export const TerminalMockup: React.FC = () => {
     return (
-        <div className="bg-[#1C1C1E] border border-[#2A2A2E] rounded-lg p-5 font-mono text-[13px] leading-7 select-none shadow-2xl shadow-black/20">
+        <div className="terminal-mockup bg-[#1C1C1E] border border-[#2A2A2E] rounded-lg p-5 font-mono text-[13px] leading-7 select-none shadow-2xl shadow-black/20">
             {/* Window dots */}
             <div className="flex items-center gap-1.5 mb-4">
                 <span className="w-3 h-3 rounded-full bg-[#FF5F56]" />

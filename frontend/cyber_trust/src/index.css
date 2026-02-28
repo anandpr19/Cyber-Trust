@@ -586,28 +586,28 @@ body {
 /* ═══════════════════════════════════════════════════════ */
 
 /* TerminalMockup must ALWAYS stay dark (it's a terminal) */
-.light .bg-\[\\#1C1C1E\] {
+.light .terminal-mockup {
   background-color: #1C1C1E !important;
   color: #71717A !important;
 }
 
-.light .bg-\[\\#1C1C1E\] * {
+.light .terminal-mockup * {
   color: inherit;
 }
 
-.light .bg-\[\\#1C1C1E\] .text-white {
+.light .terminal-mockup .text-white {
   color: #F4F4F5 !important;
 }
 
-.light .bg-\[\\#1C1C1E\] .text-green-400 {
+.light .terminal-mockup .text-green-400 {
   color: #4ade80 !important;
 }
 
-.light .bg-\[\\#1C1C1E\] .text-orange-400 {
+.light .terminal-mockup .text-orange-400 {
   color: #fb923c !important;
 }
 
-.light .bg-\[\\#1C1C1E\] .text-red-400 {
+.light .terminal-mockup .text-red-400 {
   color: #f87171 !important;
 }
 
