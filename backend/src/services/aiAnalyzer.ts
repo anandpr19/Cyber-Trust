@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import axios from 'axios';
 import { Finding } from './policyEngine';
 import { StoreMetadata } from './chromeStoreScraper';
 
@@ -19,7 +19,7 @@ Format your response as plain text. Do not use markdown formatting or asterisks 
 Start your response with "Risk Level: " followed by your assessment.`;
 
 /**
- * Analyze extension using Google Gemini AI for contextual risk assessment.
+ * Analyze extension using Groq AI (Llama 3.3 70B) for contextual risk assessment.
  * Falls back gracefully if API key is missing or call fails.
  */
 export async function analyzeWithAI(
@@ -28,30 +28,39 @@ export async function analyzeWithAI(
     storeMetadata?: StoreMetadata | null,
     extensionName?: string
 ): Promise<AIAnalysisResult | null> {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
 
     if (!apiKey) {
-        console.log('ℹ️ GEMINI_API_KEY not set - skipping AI analysis');
+        console.log('ℹ️ GROQ_API_KEY not set - skipping AI analysis');
         return null;
     }
 
     try {
-        console.log('🤖 Starting AI analysis...');
+        console.log('🤖 Starting AI analysis via Groq...');
 
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash',
-            generationConfig: {
+        const userPrompt = formatPrompt(manifest, findings, storeMetadata, extensionName);
+
+        const response = await axios.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            {
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    { role: 'system', content: SYSTEM_PROMPT },
+                    { role: 'user', content: userPrompt },
+                ],
                 temperature: 0.3,
-                maxOutputTokens: 500,
+                max_tokens: 500,
             },
-        });
+            {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                },
+                timeout: 30000,
+            }
+        );
 
-        const prompt = formatPrompt(manifest, findings, storeMetadata, extensionName);
-
-        const result = await model.generateContent(prompt);
-        const response = result.response;
-        const text = response.text();
+        const text = response.data?.choices?.[0]?.message?.content;
 
         if (!text) {
             console.warn('⚠️ AI returned empty response');
@@ -68,8 +77,8 @@ export async function analyzeWithAI(
             summary: text,
             riskLevel,
         };
-    } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Unknown error';
+    } catch (err: any) {
+        const msg = err?.response?.data?.error?.message || err?.message || 'Unknown error';
         console.warn(`⚠️ AI analysis failed: ${msg}`);
         return null;
     }
@@ -120,5 +129,5 @@ function formatPrompt(
         }
     });
 
-    return SYSTEM_PROMPT + '\n\n' + prompt;
+    return prompt;
 }

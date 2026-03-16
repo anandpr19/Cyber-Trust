@@ -19,7 +19,6 @@
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "adm-zip": "^0.5.10",
     "axios": "^1.4.0",
     "cheerio": "^1.2.0",
