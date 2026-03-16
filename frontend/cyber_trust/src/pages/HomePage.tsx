@@ -44,14 +44,19 @@ const steps = [
   },
 ];
 
+
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<{ totalScans: number; uniqueExtensions: number; averageScore: number } | null>(null);
 
   useEffect(() => {
     apiClient.getDashboard()
-      .then(data => setStats(data.stats))
-      .catch(() => { });
+      .then(data => {
+        if (data?.stats) setStats(data.stats);
+      })
+      .catch((err) => {
+        console.warn('Homepage stats unavailable:', err.message);
+      });
   }, []);
 
   return (
@@ -140,12 +145,17 @@ export const HomePage: React.FC = () => {
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-8 border-t border-b border-slate-700/50">
-          {[
-            { value: stats?.totalScans || 0, label: 'Extensions Scanned', suffix: '+' },
-            { value: stats?.uniqueExtensions || 0, label: 'Unique Extensions', suffix: '' },
-            { value: stats?.averageScore || 0, label: 'Avg Trust Score', suffix: '' },
+          {(stats ? [
+            { value: stats.totalScans, label: 'Extensions Scanned', suffix: '+' },
+            { value: stats.uniqueExtensions, label: 'Unique Extensions', suffix: '' },
+            { value: stats.averageScore, label: 'Avg Trust Score', suffix: '' },
             { value: 23, label: 'Security Checks', suffix: '' },
-          ].map((stat) => (
+          ] : [
+            { value: 23, label: 'Security Checks', suffix: '' },
+            { value: 7, label: 'Risk Categories', suffix: '' },
+            { value: 100, label: 'Max Trust Score', suffix: '' },
+            { value: 5, label: 'Seconds to Scan', suffix: 's' },
+          ]).map((stat) => (
             <div key={stat.label} className="text-center">
               <AnimatedCounter
                 target={stat.value}
