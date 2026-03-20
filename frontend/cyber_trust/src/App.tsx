@@ -13,7 +13,7 @@ export const App: React.FC = () => {
   return (
     <ThemeProvider>
       <Router>
-        <div className="min-h-screen flex flex-col bg-slate-900">
+        <div className="min-h-screen flex flex-col bg-zinc-950 text-zinc-100 font-sans">
           <Header />
 
           <main className="flex-1">

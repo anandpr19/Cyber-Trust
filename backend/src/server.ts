@@ -4,6 +4,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import mongoose from 'mongoose';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 
 // Routes
 import { default as scanRoutes } from './routes/scanRoutes';
@@ -12,6 +13,9 @@ import { default as dashboardRoutes } from './routes/dashboardRoutes';
 
 const app: Express = express();
 const PORT = process.env.PORT || 4000;
+
+// ─── Security Headers ────────────────────────────────────
+app.use(helmet());
 
 // ─── CORS ────────────────────────────────────────────────
 // In production, restrict to your Vercel frontend domain.

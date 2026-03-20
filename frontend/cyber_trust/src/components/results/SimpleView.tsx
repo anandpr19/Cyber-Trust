@@ -73,41 +73,41 @@ function getRecommendation(score: number, overallRisk: string): { text: string; 
         return {
             text: 'We recommend avoiding this extension',
             icon: '⛔',
-            color: 'text-red-200',
-            bgColor: 'bg-red-900/30',
-            borderColor: 'border-red-600/40'
+            color: 'text-red-400',
+            bgColor: 'bg-zinc-900/40',
+            borderColor: 'border-red-500/20 border-l-2 border-l-red-500'
         };
     } else if (overallRisk === 'HIGH' || score <= 30) {
         return {
             text: 'High risk — only install if you truly trust the developer',
             icon: '🔴',
-            color: 'text-orange-200',
-            bgColor: 'bg-orange-900/30',
-            borderColor: 'border-orange-600/40'
+            color: 'text-orange-400',
+            bgColor: 'bg-zinc-900/40',
+            borderColor: 'border-orange-500/20 border-l-2 border-l-orange-500'
         };
     } else if (overallRisk === 'MEDIUM' || score <= 60) {
         return {
             text: 'Review the permissions carefully before installing',
             icon: '⚠️',
-            color: 'text-amber-200',
-            bgColor: 'bg-amber-900/25',
-            borderColor: 'border-amber-600/40'
+            color: 'text-amber-400',
+            bgColor: 'bg-zinc-900/40',
+            borderColor: 'border-amber-500/20 border-l-2 border-l-amber-500'
         };
     } else if (score <= 80) {
         return {
             text: 'Generally safe — common permissions for this type of extension',
-            icon: '👍',
-            color: 'text-blue-200',
-            bgColor: 'bg-blue-900/20',
-            borderColor: 'border-blue-600/30'
+            icon: '✅',
+            color: 'text-zinc-300',
+            bgColor: 'bg-zinc-900/40',
+            borderColor: 'border-white/5 border-l-2 border-l-zinc-500'
         };
     } else {
         return {
             text: 'This extension appears safe to install',
             icon: '✅',
-            color: 'text-green-200',
-            bgColor: 'bg-green-900/25',
-            borderColor: 'border-green-600/35'
+            color: 'text-zinc-300',
+            bgColor: 'bg-zinc-900/40',
+            borderColor: 'border-white/5 border-l-2 border-l-green-500'
         };
     }
 }
@@ -150,35 +150,43 @@ export const SimpleView: React.FC<SimpleViewProps> = ({ analysis, onSwitchToDeta
         <div className="space-y-6">
 
             {/* Trust Score Circle + Verdict */}
-            <Card className="border-slate-700/50 bg-slate-800/40">
-                <div className="flex flex-col sm:flex-row items-center gap-8 py-4">
+            <Card className="border border-white/5 bg-zinc-900/40 shadow-2xl">
+                <div className="flex flex-col sm:flex-row items-center gap-10 py-6 px-4">
                     {/* Score Circle */}
                     <div className="relative flex-shrink-0">
                         <svg width="140" height="140" viewBox="0 0 120 120" className="transform -rotate-90">
-                            <circle cx="60" cy="60" r="54" fill="none" stroke="#1e293b" strokeWidth="8" />
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="#27272a" strokeWidth="6" />
                             <circle
                                 cx="60" cy="60" r="54" fill="none"
                                 stroke={scoreColor}
-                                strokeWidth="8"
+                                strokeWidth="6"
                                 strokeLinecap="round"
                                 strokeDasharray={`${strokeDash} ${circumference}`}
                                 className="transition-all duration-1000 ease-out"
                             />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-4xl font-bold text-white">{score}</span>
-                            <span className="text-xs text-slate-400">/100</span>
+                            <span className="text-5xl font-display tracking-tight font-bold text-zinc-100">{score}</span>
+                            <span className="text-xs font-mono text-zinc-500">/100</span>
                         </div>
                     </div>
 
                     {/* Verdict */}
                     <div className="text-center sm:text-left flex-1">
-                        <h2 className="text-3xl font-bold text-white mb-1">{verdict}</h2>
-                        <p className="text-slate-400">{report.summary}</p>
+                        <h2 className="text-4xl font-display tracking-tight font-bold text-zinc-100 mb-2">{verdict}</h2>
+                        <p className="text-zinc-400 font-medium">{report.summary}</p>
+                        
+                        <p className="text-xs text-zinc-500 font-mono mt-4 border-l border-zinc-700 pl-3 py-1">
+                            {'>'} WARNING: Score reflects static patterns, not runtime behavior.
+                        </p>
+
                         {analysis.cached && (
-                            <span className="inline-block mt-2 text-blue-400 text-xs bg-blue-500/10 px-2 py-0.5 rounded-full">
-                                📦 Cached result
-                            </span>
+                            <div className="mt-4">
+                                <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-zinc-400 bg-zinc-800/50 border border-white/5 px-2 py-1 rounded">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                                    Cached
+                                </span>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -186,13 +194,14 @@ export const SimpleView: React.FC<SimpleViewProps> = ({ analysis, onSwitchToDeta
 
             {/* TLDR — AI Analysis */}
             {aiAnalysis && (
-                <Card className="border-purple-600/30 bg-gradient-to-br from-purple-900/15 to-indigo-900/15">
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className="text-lg">🤖</span>
-                                <h3 className="text-lg font-bold text-purple-200">TLDR</h3>
-                                <span className="text-purple-500 text-xs bg-purple-500/10 px-2 py-0.5 rounded-full">AI-Powered</span>
+                <Card className="border border-white/5 border-l-2 border-l-blue-500 bg-zinc-900/40 shadow-xl">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                            <div className="flex items-center gap-3">
+                                <h3 className="text-sm font-mono tracking-widest uppercase text-zinc-400">
+                                    <span className="text-blue-500 mr-2">~/</span>
+                                    AI_Analysis_Log
+                                </h3>
                             </div>
                             {aiAnalysis.riskLevel && (
                                 <Badge
@@ -208,29 +217,47 @@ export const SimpleView: React.FC<SimpleViewProps> = ({ analysis, onSwitchToDeta
                                 </Badge>
                             )}
                         </div>
-                        <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line">
-                            {aiAnalysis.summary}
-                        </p>
+                        
+                        <div className="text-slate-300 text-sm leading-relaxed space-y-3">
+                            {aiAnalysis.summary.split('\n').map((line, idx) => {
+                                const trimmed = line.trim();
+                                if (!trimmed) return null;
+                                
+                                // Parse out bold headers if the LLM includes them
+                                const isHeader = trimmed.endsWith(':') || trimmed.includes('Risk Level:');
+                                
+                                return (
+                                    <p key={idx} className={`${isHeader ? 'font-semibold text-slate-200 mt-4' : 'text-slate-400'} flex gap-2`}>
+                                        {trimmed.startsWith('-') || trimmed.startsWith('*') || /^\d+\./.test(trimmed) ? (
+                                            <span className="text-purple-500 mt-0.5">•</span>
+                                        ) : null}
+                                        <span>
+                                            {trimmed.replace(/^[-*]\s*/, '').replace(/^\d+\.\s*/, '')}
+                                        </span>
+                                    </p>
+                                );
+                            })}
+                        </div>
                     </div>
                 </Card>
             )}
 
             {/* What This Extension Can Do */}
             {permissions.length > 0 && (
-                <Card className="border-slate-700/50 bg-slate-800/40">
-                    <h3 className="text-lg font-bold text-white mb-4">What This Extension Can Do</h3>
-                    <div className="space-y-3">
+                <Card className="border border-white/5 bg-zinc-900/40 shadow-xl">
+                    <h3 className="text-sm font-mono tracking-widest uppercase text-zinc-400 mb-6 border-b border-white/5 pb-3">Detected_Permissions</h3>
+                    <div className="space-y-4">
                         {permissions.map((perm, i) => (
                             <div
                                 key={i}
-                                className="flex items-start gap-3 animate-fade-in-up"
+                                className="flex items-start gap-4 animate-fade-in-up group"
                                 style={{ animationDelay: `${i * 60}ms` }}
                             >
-                                <span className="text-xl flex-shrink-0 mt-0.5">{perm.icon}</span>
+                                <span className="text-xl flex-shrink-0 mt-0.5 opacity-80 group-hover:opacity-100 transition-opacity drop-shadow-lg">{perm.icon}</span>
                                 <div className="flex-1">
-                                    <p className="text-slate-200 text-sm">{perm.text}</p>
+                                    <p className="text-zinc-300 text-sm font-medium">{perm.text}</p>
                                 </div>
-                                <span className={`text-xs font-semibold uppercase ${severityColors[perm.severity]}`}>
+                                <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded bg-zinc-800/80 border border-white/5 ${severityColors[perm.severity]}`}>
                                     {perm.severity}
                                 </span>
                             </div>
@@ -240,33 +267,34 @@ export const SimpleView: React.FC<SimpleViewProps> = ({ analysis, onSwitchToDeta
             )}
 
             {/* Recommendation Card */}
-            <Card className={`${recommendation.borderColor} ${recommendation.bgColor}`}>
-                <div className="flex items-center gap-4">
-                    <span className="text-3xl">{recommendation.icon}</span>
+            <Card className={`border border-white/5 shadow-inner ${recommendation.bgColor}`}>
+                <div className="flex items-center gap-5 relative">
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${recommendation.borderColor.split(' ').find(c => c.startsWith('border-l-'))?.replace('border-l-', 'bg-')} rounded-l-md`}></div>
+                    <span className="text-3xl pl-3">{recommendation.icon}</span>
                     <div>
-                        <h3 className={`text-lg font-bold ${recommendation.color}`}>Our Recommendation</h3>
-                        <p className={`${recommendation.color} opacity-90`}>{recommendation.text}</p>
+                        <h3 className={`text-sm font-mono tracking-widest uppercase mb-1 ${recommendation.color}`}>System_Recommendation</h3>
+                        <p className="text-zinc-200 font-medium text-lg tracking-tight">{recommendation.text}</p>
                     </div>
                 </div>
             </Card>
 
             {/* Extension Info footer */}
             {storeMetadata && (
-                <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-slate-400 pt-2">
-                    {storeMetadata.author && <span>By <span className="text-slate-300">{storeMetadata.author}</span></span>}
-                    {storeMetadata.rating && <span>⭐ {storeMetadata.rating}</span>}
-                    {storeMetadata.users && <span>👥 {storeMetadata.users}</span>}
-                    {storeMetadata.size && <span>📦 {storeMetadata.size}</span>}
+                <div className="flex flex-wrap items-center justify-center gap-5 text-xs font-mono text-zinc-500 pt-4 pb-2 border-t border-white/5">
+                    {storeMetadata.author && <span>AUTHOR: <span className="text-zinc-300">{storeMetadata.author}</span></span>}
+                    {storeMetadata.rating && <span>RATING: <span className="text-zinc-300">{storeMetadata.rating}</span></span>}
+                    {storeMetadata.users && <span>USERS: <span className="text-zinc-300">{storeMetadata.users}</span></span>}
+                    {storeMetadata.size && <span>SIZE: <span className="text-zinc-300">{storeMetadata.size}</span></span>}
                 </div>
             )}
 
             {/* Switch to Detailed View */}
-            <div className="text-center pt-4">
+            <div className="text-center pt-2">
                 <button
                     onClick={onSwitchToDetailed}
-                    className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors inline-flex items-center gap-2"
+                    className="text-blue-500 hover:text-blue-400 font-mono text-xs uppercase tracking-widest transition-colors inline-flex items-center gap-2 px-4 py-2 rounded border border-transparent hover:border-blue-500/30 hover:bg-blue-500/10"
                 >
-                    🔬 View Full Technical Analysis →
+                    {'>'} View_Detailed_Logs
                 </button>
             </div>
         </div>

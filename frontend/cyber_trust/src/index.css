@@ -2,13 +2,13 @@
 
 /* ─── Theme Variables ─────────────────────────────────── */
 :root {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --scrollbar-track: rgb(15, 23, 42);
-  --scrollbar-thumb: rgb(71, 85, 105);
-  --scrollbar-hover: rgb(100, 116, 139);
+  --bg-primary: #09090b;
+  --bg-secondary: #18181b;
+  --text-primary: #ededed;
+  --text-secondary: #a1a1aa;
+  --scrollbar-track: #09090b;
+  --scrollbar-thumb: #27272a;
+  --scrollbar-hover: #3f3f46;
 }
 
 html.light {
@@ -157,14 +157,17 @@ html.light {
 
   button:focus-visible,
   a:focus-visible {
-    @apply outline-blue-500 outline-2 outline-offset-2;
+    outline-style: solid;
+    outline-width: 2px;
+    outline-color: #3b82f6; /* blue-500 */
+    outline-offset: 2px;
   }
 }
 
 /* ─── Components ──────────────────────────────────────── */
 @layer components {
   .container {
-    @apply max-w-7xl;
+    max-width: 80rem; /* max-w-7xl */
   }
 
   * {
@@ -312,8 +315,25 @@ body {
   background: rgba(226, 232, 240, 0.55);
 }
 
-.light .hover\:text-white:hover {
+.light .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.light .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .hover\:text-white:hover,
+.light .hover\:text-zinc-300:hover {
   color: #0f172a;
+}
+
+.light .hover\:text-zinc-400:hover {
+  color: #334155;
+}
+
+.light .hover\:border-white\/10:hover {
+  border-color: #cbd5e1;
 }
 
 /* ── Colored card backgrounds (keep tinted, lighter) ──── */
@@ -448,53 +468,69 @@ body {
   color: white !important;
 }
 
-/* Toggle active state should keep white text */
-.light .bg-gradient-to-r.from-blue-600 {
-  color: white;
+/* ═══════════════════════════════════════════════════════ */
+/* ═══  LIGHT THEME OVERRIDES (comprehensive)  ═════════ */
+/* ═══════════════════════════════════════════════════════ */
+
+/* ── Page backgrounds ──────────────────────────────────── */
+
+html.light .bg-zinc-950,
+html.light .bg-black\/40,
+html.light .bg-zinc-900\/40,
+html.light .bg-zinc-900\/50,
+html.light .bg-slate-800\/50,
+html.light .bg-slate-800\/40,
+html.light .bg-slate-900 {
+  background-color: #ffffff;
 }
 
-.light .shadow-lg.shadow-blue-500\/20 {
-  color: white !important;
+html.light .bg-zinc-950\/80,
+html.light .bg-zinc-900\/60,
+html.light .bg-zinc-800\/80,
+html.light .bg-zinc-800\/50,
+html.light .bg-slate-800 {
+  background-color: #f8fafc;
 }
 
-/* ── Input fields ──────────────────────────────────────── */
-.light input,
-.light textarea {
-  background: rgba(255, 255, 255, 0.9);
+html.light .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+html.light .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+html.light .bg-black\/20 {
+  background-color: #f1f5f9;
+}
+
+/* ── Borders (Ultra-thin Dev Tool Look) ────────────────── */
+html.light .border-white\/5,
+html.light .border-white\/10,
+html.light .border-white\/20,
+html.light .border-slate-700\/50 {
+  border-color: #e2e8f0;
+}
+
+html.light .border-zinc-700 {
   border-color: #cbd5e1;
+}
+
+/* ── Typography (High Contrast) ────────────────────────── */
+html.light .text-zinc-100,
+html.light .text-zinc-200,
+html.light .text-zinc-300,
+html.light .text-white {
   color: #0f172a;
 }
 
-.light input::placeholder,
-.light textarea::placeholder {
-  color: #94a3b8;
-}
-
-.light input:focus,
-.light textarea:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-}
-
-/* ── Code/pre blocks ───────────────────────────────────── */
-.light pre {
-  background: rgba(241, 245, 249, 0.9) !important;
-  border-color: rgba(203, 213, 225, 0.5) !important;
-  color: #334155 !important;
-}
-
-/* ── Table ─────────────────────────────────────────────── */
-.light table th {
+html.light .text-zinc-400,
+html.light .text-zinc-500,
+html.light .text-zinc-600,
+html.light .text-zinc-700,
+html.light .text-slate-400,
+html.light .text-slate-500 {
   color: #475569;
-}
-
-.light table td {
-  color: #334155;
-}
-
-/* ── Interactive card hover effect ─────────────────────── */
-.light .hover\:-translate-y-1:hover {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 }
 
 /* ═══════════════════════════════════════════════════════ */
@@ -504,10 +540,6 @@ body {
 /* Severity text colors must stay vibrant for readability */
 .light .text-red-400 {
   color: #dc2626;
-}
-
-.light .text-red-200 {
-  color: #b91c1c;
 }
 
 .light .text-orange-400 {

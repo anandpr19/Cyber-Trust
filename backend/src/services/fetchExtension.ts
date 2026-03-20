@@ -75,24 +75,28 @@ async function fetchFromMirror(extensionId: string): Promise<Buffer> {
 }
 
 export function extractExtensionId(input: string): string {
-  if (/^[a-p0-9]{32}$/.test(input)) {
-    return input;
+  let id = '';
+
+  if (/^[a-z]{32}$/.test(input)) {
+    id = input;
+  } else {
+    const match = input.match(/([a-z]{32})(?:\?|$)/);
+    if (match) {
+      id = match[1];
+    } else {
+      const extMatch = input.match(/chrome-extension:\/\/([a-z]{32})/);
+      if (extMatch) id = extMatch[1];
+    }
   }
 
-  const match = input.match(/([a-p0-9]{32})(?:\?|$)/);
-  if (match) {
-    return match[1];
-  }
-
-  const extMatch = input.match(/chrome-extension:\/\/([a-p0-9]{32})/);
-  if (extMatch) {
-    return extMatch[1];
+  if (id && /^[a-z]{32}$/.test(id)) {
+    return id;
   }
 
   throw new Error(
     'Invalid extension ID or URL. Expected:\n' +
-    '- Chrome Web Store URL: https://chromewebstore.google.com/detail/.../abc123...\n' +
-    '- Extension ID: abc123... (32 characters)\n' +
+    '- Chrome Web Store URL: https://chromewebstore.google.com/detail/.../abc... (32 lowercase letters)\n' +
+    '- Extension ID: abc... (32 lowercase letters)\n' +
     `- Got: ${input}`
   );
 }

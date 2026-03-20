@@ -60,7 +60,7 @@ export const HomePage: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800">
+    <div className="min-h-screen">
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
         <div className="flex flex-col lg:flex-row items-start gap-12">
@@ -69,10 +69,10 @@ export const HomePage: React.FC = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-md px-3 py-1.5 mb-6"
+              className="inline-flex items-center gap-2 bg-black/40 border border-white/5 rounded px-3 py-1 mb-6"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              <span className="font-mono text-xs text-blue-400">Security Analyzer v1.0</span>
+              <span className="w-1.5 h-1.5 rounded-none bg-blue-500 animate-pulse border border-white/10" />
+              <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">Security Analyzer v1.0</span>
             </motion.div>
 
             <motion.h1
@@ -80,11 +80,11 @@ export const HomePage: React.FC = () => {
               variants={fadeUp}
               initial="hidden"
               animate="visible"
-              className="text-4xl lg:text-[56px] font-bold leading-[1.1] text-white tracking-tight"
+              className="text-4xl lg:text-7xl font-display font-bold leading-[1.05] text-zinc-100 tracking-tight"
             >
               Know Before
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
+              <span className="text-blue-500">
                 You Install
               </span>
             </motion.h1>
@@ -94,11 +94,11 @@ export const HomePage: React.FC = () => {
               variants={fadeUp}
               initial="hidden"
               animate="visible"
-              className="mt-6 text-lg text-slate-400 max-w-[520px] leading-relaxed"
+              className="mt-6 text-sm font-mono text-zinc-400 max-w-[520px] leading-relaxed uppercase tracking-widest"
             >
-              Static security analysis for Chrome extensions. Upload an extension
-              or paste a Web Store URL to scan permissions, detect vulnerabilities,
-              and get a Trust Score — powered by AI.
+              Static security analysis for Chrome extensions. Upload a payload
+              or input a Web Store URL to scan permissions, detect vulnerabilities,
+              and retrieve a Trust Score — powered by AI.
             </motion.p>
 
             <motion.div
@@ -110,16 +110,16 @@ export const HomePage: React.FC = () => {
             >
               <button
                 onClick={() => navigate('/upload')}
-                className="group bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-6 py-3 rounded-lg transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                className="group bg-blue-600 hover:bg-blue-500 text-white font-mono tracking-widest text-[11px] uppercase px-6 py-3 rounded-sm transition-all flex items-center gap-2"
               >
-                Upload & Analyze
-                <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                EXECUTE_ANALYSIS
+                <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
               <button
                 onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-                className="text-sm text-slate-400 hover:text-white transition-colors"
+                className="text-[11px] font-mono tracking-widest uppercase text-zinc-500 hover:text-zinc-300 transition-colors"
               >
-                See how it works ↓
+                VIEW_DOCUMENTATION ↓
               </button>
             </motion.div>
           </div>
@@ -144,7 +144,7 @@ export const HomePage: React.FC = () => {
         transition={{ duration: 0.5 }}
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-8 border-t border-b border-slate-700/50">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-8 border-t border-b border-white/5">
           {(stats ? [
             { value: stats.totalScans, label: 'Extensions Scanned', suffix: '+' },
             { value: stats.uniqueExtensions, label: 'Unique Extensions', suffix: '' },
@@ -160,9 +160,9 @@ export const HomePage: React.FC = () => {
               <AnimatedCounter
                 target={stat.value}
                 suffix={stat.suffix}
-                className="font-mono text-2xl md:text-3xl font-bold text-white"
+                className="font-display tracking-tight text-3xl md:text-5xl font-bold text-zinc-100"
               />
-              <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
+              <p className="font-mono text-[10px] tracking-widest text-zinc-500 uppercase mt-2">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -174,9 +174,9 @@ export const HomePage: React.FC = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-xl font-bold text-white mb-8"
+          className="text-xl font-display font-bold tracking-tight text-zinc-100 mb-8 border-b border-white/5 pb-2"
         >
-          What Cyber-Trust Does
+          CAPABILITIES
         </motion.h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {capabilities.map((cap, i) => (
@@ -187,25 +187,25 @@ export const HomePage: React.FC = () => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className="group bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-blue-600/40 transition-all duration-300"
+              className="group bg-zinc-900/40 border border-white/5 shadow-sm rounded-sm p-5 hover:border-white/10 transition-all duration-300"
             >
-              <cap.icon size={20} className="text-slate-400 mb-3 group-hover:text-blue-400 transition-colors" strokeWidth={1.5} />
-              <h3 className="font-semibold text-sm text-white mb-1">{cap.label}</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">{cap.desc}</p>
+              <cap.icon size={20} className="text-zinc-500 mb-4 group-hover:text-blue-400 transition-colors" strokeWidth={1.5} />
+              <h3 className="font-mono tracking-widest text-[10px] uppercase font-bold text-zinc-300 mb-2">{cap.label}</h3>
+              <p className="text-[11px] font-mono text-zinc-500 leading-relaxed uppercase">{cap.desc}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-700/30">
+      <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-white/5">
         <motion.h2
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-xl font-bold text-white mb-10"
+          className="text-xl font-display font-bold tracking-tight text-zinc-100 mb-10 border-b border-white/5 pb-2 cursor-text"
         >
-          How It Works
+          EXECUTION_FLOW
         </motion.h2>
         <div className="grid md:grid-cols-3 gap-8">
           {steps.map((step, i) => (
@@ -216,17 +216,16 @@ export const HomePage: React.FC = () => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className="relative bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-blue-600/30 transition-all duration-300 overflow-hidden"
+              className="relative bg-zinc-900/40 border border-white/5 shadow-sm rounded-sm p-6 hover:border-white/10 transition-all duration-300 overflow-hidden"
             >
-              <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${step.accent} to-transparent`} />
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-md bg-slate-700/50 flex items-center justify-center border border-slate-600/40">
-                  <step.icon size={16} className="text-slate-400" strokeWidth={1.5} />
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 rounded-sm bg-black/40 flex items-center justify-center border border-white/5">
+                  <step.icon size={16} className="text-zinc-500" strokeWidth={1.5} />
                 </div>
-                <span className="font-mono text-xs text-slate-500">0{i + 1}</span>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-600 bg-black/20 px-2 py-0.5 rounded border border-white/5 ">STEP_0{i + 1}</span>
               </div>
-              <h3 className="font-semibold text-white mb-2">{step.title}</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">{step.desc}</p>
+              <h3 className="font-mono text-xs uppercase tracking-widest font-bold text-zinc-300 mb-2">{step.title}</h3>
+              <p className="text-xs font-mono text-zinc-500 leading-relaxed uppercase">{step.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -238,21 +237,21 @@ export const HomePage: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-slate-700/30"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-white/5"
       >
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-10 text-center">
-          <h2 className="text-2xl font-bold text-white mb-3">
-            Ready to Scan Your Extensions?
+        <div className="bg-zinc-900/40 border border-white/5 shadow-sm rounded-sm p-10 text-center">
+          <h2 className="text-2xl font-display font-bold tracking-tight text-zinc-100 mb-3">
+            INITIATE_ANALYSIS
           </h2>
-          <p className="text-sm text-slate-400 mb-6 max-w-md mx-auto">
-            Upload any .crx file or paste a Chrome Web Store URL and get a detailed security report in seconds.
+          <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-500 mb-6 max-w-md mx-auto leading-relaxed">
+            Upload payload or input Web Store locator. Detailed security heuristic report synthesized autonomously.
           </p>
           <button
             onClick={() => navigate('/upload')}
-            className="group bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-8 py-3 rounded-lg transition-all inline-flex items-center gap-2 shadow-lg shadow-blue-500/20"
+            className="group bg-blue-600 hover:bg-blue-500 text-white font-mono tracking-widest text-[11px] uppercase px-8 py-3 rounded-sm transition-all inline-flex items-center gap-2"
           >
-            Start Scanning
-            <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+            START_SCANNING
+            <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
       </motion.section>

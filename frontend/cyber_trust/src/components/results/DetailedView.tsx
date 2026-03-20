@@ -34,53 +34,57 @@ export const DetailedView: React.FC<DetailedViewProps> = ({ analysis, onSwitchTo
         <div className="space-y-8">
 
             {/* Switch to Simple */}
-            <div className="text-center">
+            <div className="text-center font-mono">
                 <button
                     onClick={onSwitchToSimple}
-                    className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors inline-flex items-center gap-2"
+                    className="text-zinc-400 hover:text-zinc-200 text-xs uppercase tracking-widest transition-colors inline-flex items-center gap-2 border border-white/5 bg-zinc-900/40 px-3 py-1.5 rounded"
                 >
-                    ← Back to Simple View
+                    {'<'} Return_To_Summary
                 </button>
             </div>
 
             {/* Risk Level Card */}
-            <Card className="border-blue-600/30 bg-gradient-to-br from-blue-900/20 to-purple-900/20 overflow-hidden">
-                <div className="space-y-6">
+            <Card className="border border-white/5 bg-zinc-900/40 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <span className="font-mono text-9xl leading-none font-bold text-white tracking-tighter mix-blend-overlay blur-[2px]">{report.riskScore}</span>
+                </div>
+                <div className="space-y-6 relative z-10">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-slate-400 text-sm uppercase tracking-wider">Overall Risk</p>
-                            <h2 className={`text-5xl font-bold mt-2 ${getRiskTextColor(report.overallRisk)}`}>
+                            <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-widest mb-2">[OVERALL_RISK]</p>
+                            <h2 className={`text-6xl font-display font-bold tracking-tight ${getRiskTextColor(report.overallRisk)}`}>
                                 {report.overallRisk}
                             </h2>
                         </div>
                         <div className="text-right">
                             <Badge variant={report.overallRisk.toLowerCase() as 'critical' | 'high' | 'medium' | 'low' | 'safe'} size="lg">
-                                Score: {report.riskScore}/100
+                                SCORE: {report.riskScore}/100
                             </Badge>
-                            <p className="text-slate-400 text-sm mt-2">{report.riskPercentage}% Risk</p>
+                            <p className="text-zinc-500 font-mono text-xs mt-2">{report.riskPercentage}%_VULNERABILITY</p>
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <p className="text-sm text-slate-400">Security Score</p>
+                    <div className="space-y-2 mt-8">
+                        <div className="flex justify-between items-end">
+                            <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">Security_Score_Progress</p>
+                        </div>
                         <ProgressBar value={report.riskScore} max={100} animated={true} />
                     </div>
-                    <div className="pt-4 border-t border-slate-700/50">
-                        <p className="text-slate-300 text-lg">{report.summary}</p>
+                    <div className="pt-6 border-t border-white/5">
+                        <p className="text-zinc-300 text-lg font-medium">{report.summary}</p>
                     </div>
                 </div>
             </Card>
 
             {/* TLDR — AI Analysis */}
             {aiAnalysis && (
-                <Card className="border-purple-600/30 bg-gradient-to-br from-purple-900/20 to-indigo-900/20 overflow-hidden">
+                <Card className="border border-white/5 border-l-2 border-l-blue-500 bg-zinc-900/40 shadow-xl">
                     <div className="space-y-4">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between border-b border-white/5 pb-3">
                             <div className="flex items-center gap-3">
-                                <span className="text-2xl">🤖</span>
-                                <div>
-                                    <h3 className="text-xl font-bold text-purple-200">TLDR</h3>
-                                    <p className="text-purple-400 text-xs">Powered by Google Gemini</p>
-                                </div>
+                                <h3 className="text-sm font-mono tracking-widest uppercase text-zinc-400">
+                                    <span className="text-blue-500 mr-2">~/</span>
+                                    AI_Analysis_Log
+                                </h3>
                             </div>
                             {aiAnalysis.riskLevel && (
                                 <Badge
@@ -90,14 +94,32 @@ export const DetailedView: React.FC<DetailedViewProps> = ({ analysis, onSwitchTo
                                                 aiAnalysis.riskLevel.toLowerCase() === 'medium' ? 'medium' :
                                                     aiAnalysis.riskLevel.toLowerCase() === 'low' ? 'low' : 'safe'
                                     }
-                                    size="md"
+                                    size="sm"
                                 >
                                     AI: {aiAnalysis.riskLevel}
                                 </Badge>
                             )}
                         </div>
-                        <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-line bg-slate-800/30 rounded-xl p-4 border border-purple-700/20">
-                            {aiAnalysis.summary}
+                        
+                        <div className="text-zinc-300 text-sm leading-relaxed space-y-3">
+                            {aiAnalysis.summary.split('\n').map((line, idx) => {
+                                const trimmed = line.trim();
+                                if (!trimmed) return null;
+                                
+                                // Parse out bold headers if the LLM includes them
+                                const isHeader = trimmed.endsWith(':') || trimmed.includes('Risk Level:');
+                                
+                                return (
+                                    <p key={idx} className={`${isHeader ? 'font-mono text-xs uppercase tracking-widest text-zinc-100 mt-6 mb-2 border-b border-white/5 pb-1' : 'text-zinc-400 font-medium'} flex gap-3`}>
+                                        {trimmed.startsWith('-') || trimmed.startsWith('*') || /^\d+\./.test(trimmed) ? (
+                                            <span className="text-zinc-700 mt-0.5 font-mono">›</span>
+                                        ) : null}
+                                        <span>
+                                            {trimmed.replace(/^[-*]\s*/, '').replace(/^\d+\.\s*/, '')}
+                                        </span>
+                                    </p>
+                                );
+                            })}
                         </div>
                     </div>
                 </Card>
@@ -106,18 +128,18 @@ export const DetailedView: React.FC<DetailedViewProps> = ({ analysis, onSwitchTo
             {/* Findings Tabs */}
             <div className="space-y-6">
                 <div>
-                    <h3 className="text-2xl font-bold text-white mb-4">Detailed Findings</h3>
-                    <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                    <h3 className="text-xl font-display tracking-tight font-bold text-zinc-100 mb-4 border-b border-white/5 pb-2">Analysis_Report.log</h3>
+                    <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-thin">
                         {tabs.map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap ${activeTab === tab
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                                className={`px-4 py-1.5 rounded font-mono text-xs uppercase tracking-widest transition-all whitespace-nowrap border ${activeTab === tab
+                                        ? 'bg-zinc-100 text-zinc-900 border-zinc-100'
+                                        : 'bg-transparent text-zinc-500 border-white/5 hover:border-white/20 hover:text-zinc-300'
                                     }`}
                             >
-                                {tab.charAt(0).toUpperCase() + tab.slice(1)} ({tabCounts[tab]})
+                                {tab} [{tabCounts[tab]}]
                             </button>
                         ))}
                     </div>
@@ -145,17 +167,17 @@ export const DetailedView: React.FC<DetailedViewProps> = ({ analysis, onSwitchTo
 
             {/* Recommendations */}
             {report.recommendations.length > 0 && (
-                <Card className="border-amber-600/30 bg-amber-900/20">
+                <Card className="border border-white/5 bg-zinc-900/40">
                     <div className="space-y-4">
-                        <h3 className="text-xl font-bold text-amber-200">📋 Recommendations</h3>
+                        <h3 className="text-sm font-mono tracking-widest uppercase text-zinc-400 border-b border-white/5 pb-2">Suggested_Actions</h3>
                         <ul className="space-y-2">
                             {report.recommendations.map((rec, index) => (
                                 <li
                                     key={index}
-                                    className="flex gap-3 text-amber-300/90 animate-fade-in-up"
+                                    className="flex gap-3 text-zinc-300 animate-fade-in-up"
                                     style={{ animationDelay: `${index * 50}ms` }}
                                 >
-                                    <span className="flex-shrink-0">→</span>
+                                    <span className="flex-shrink-0 text-zinc-500 font-mono">{'>'}</span>
                                     <span>{rec}</span>
                                 </li>
                             ))}
@@ -166,29 +188,26 @@ export const DetailedView: React.FC<DetailedViewProps> = ({ analysis, onSwitchTo
 
             {/* Embedded URLs */}
             {embeddedUrls.length > 0 && (
-                <Card className="border-cyan-600/30 bg-cyan-900/10">
+                <Card className="border border-white/5 bg-zinc-900/40">
                     <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className="text-xl">🔗</span>
-                                <h3 className="text-xl font-bold text-cyan-200">
-                                    Embedded URLs ({embeddedUrls.length})
-                                </h3>
-                            </div>
+                        <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                            <h3 className="text-sm font-mono tracking-widest uppercase text-zinc-400">
+                                Discovered_Network_Requests [{embeddedUrls.length}]
+                            </h3>
                             {embeddedUrls.length > 5 && (
                                 <button
                                     onClick={() => setShowAllUrls(!showAllUrls)}
-                                    className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+                                    className="text-xs font-mono text-zinc-500 hover:text-zinc-300 transition-colors uppercase"
                                 >
-                                    {showAllUrls ? 'Show less' : `Show all ${embeddedUrls.length}`}
+                                    {showAllUrls ? '[Minimize]' : '[Expand_All]'}
                                 </button>
                             )}
                         </div>
-                        <div className="space-y-1.5 max-h-80 overflow-y-auto">
+                        <div className="space-y-1.5 max-h-80 overflow-y-auto pr-2 scrollbar-thin">
                             {(showAllUrls ? embeddedUrls : embeddedUrls.slice(0, 5)).map((url, index) => (
                                 <div
                                     key={index}
-                                    className="text-sm text-cyan-300/80 bg-slate-800/40 px-3 py-1.5 rounded-lg font-mono truncate hover:text-cyan-200 transition-colors"
+                                    className="text-xs text-zinc-400 bg-black/40 border border-white/5 px-3 py-2 rounded font-mono truncate hover:text-zinc-200 transition-colors"
                                     title={url}
                                 >
                                     {url}

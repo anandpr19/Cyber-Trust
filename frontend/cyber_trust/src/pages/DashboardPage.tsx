@@ -116,7 +116,7 @@ export const DashboardPage: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800 pt-24 pb-12">
+        <div className="min-h-screen pt-24 pb-12">
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <motion.div
@@ -125,8 +125,8 @@ export const DashboardPage: React.FC = () => {
                     className="flex items-center justify-between mb-10"
                 >
                     <div>
-                        <h1 className="text-[28px] font-bold text-white">Security Dashboard</h1>
-                        <p className="text-sm text-slate-400 mt-1">Extension security overview and scan history</p>
+                        <h1 className="text-4xl font-display font-bold tracking-tight text-zinc-100 mb-1">Security Dashboard</h1>
+                        <p className="text-sm font-mono text-zinc-500">~/Overview & Scan History</p>
                     </div>
                     <button
                         onClick={() => navigate('/upload')}
@@ -146,17 +146,17 @@ export const DashboardPage: React.FC = () => {
                             variants={fadeUp}
                             initial="hidden"
                             animate="visible"
-                            className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-slate-600/60 transition-all duration-300"
+                            className="bg-zinc-900/40 border border-white/5 rounded p-5 hover:border-white/10 transition-all duration-300 shadow-sm relative overflow-hidden group"
                         >
-                            <div className="flex items-center justify-between mb-3">
-                                <stat.icon size={18} className="text-slate-400" strokeWidth={1.5} />
-                                <span className="font-mono text-xs text-slate-500">30d</span>
+                            <div className="flex items-center justify-between mb-4">
+                                <stat.icon size={18} className="text-zinc-500 group-hover:text-zinc-300 transition-colors" strokeWidth={1.5} />
+                                <span className="font-mono text-[10px] tracking-widest uppercase text-zinc-600 bg-black/20 px-2 py-0.5 rounded border border-white/5">30d</span>
                             </div>
                             <AnimatedCounter
                                 target={stat.value}
-                                className={`font-mono text-2xl font-bold ${stat.color}`}
+                                className={`font-display tracking-tight text-3xl font-bold ${stat.color}`}
                             />
-                            <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
+                            <p className="text-xs font-mono tracking-widest uppercase text-zinc-500 mt-2">{stat.label}</p>
                         </motion.div>
                     ))}
                 </div>
@@ -168,10 +168,9 @@ export const DashboardPage: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5"
+                        className="bg-zinc-900/40 border border-white/5 rounded p-5 shadow-sm"
                     >
-                        <h3 className="text-sm font-semibold text-white mb-1">Risk Distribution</h3>
-                        <p className="text-xs text-slate-400 mb-5">Findings by severity</p>
+                        <h3 className="text-sm font-mono tracking-widest uppercase text-zinc-400 border-b border-white/5 pb-2 mb-4">Risk_Distribution</h3>
 
                         {/* Horizontal bar chart */}
                         <div className="space-y-3">
@@ -181,17 +180,17 @@ export const DashboardPage: React.FC = () => {
                                     <div key={sev.label}>
                                         <div className="flex items-center justify-between mb-1">
                                             <div className="flex items-center gap-2">
-                                                <span className={`w-2 h-2 rounded-full ${sev.bg}`} />
-                                                <span className="text-xs text-slate-400">{sev.label}</span>
+                                                <span className={`w-2 h-2 rounded-none opacity-80 ${sev.bg}`} />
+                                                <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400">{sev.label}</span>
                                             </div>
-                                            <span className="font-mono text-xs text-white">{sev.count} ({pct}%)</span>
+                                            <span className="font-mono text-[10px] text-zinc-300">{sev.count} [{pct}%]</span>
                                         </div>
-                                        <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+                                        <div className="h-1.5 bg-black/40 border border-white/5 rounded-none overflow-hidden">
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${pct}%` }}
                                                 transition={{ duration: 0.8, delay: 0.5 }}
-                                                className="h-full rounded-full"
+                                                className="h-full rounded-none opacity-90"
                                                 style={{ backgroundColor: sev.color }}
                                             />
                                         </div>
@@ -206,15 +205,14 @@ export const DashboardPage: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4 }}
-                        className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5"
+                        className="bg-zinc-900/40 border border-white/5 rounded p-5 shadow-sm"
                     >
-                        <div className="flex items-center gap-2 mb-5">
-                            <ShieldCheck size={16} className="text-green-400" />
-                            <h3 className="text-sm font-semibold text-white">Most Analyzed</h3>
+                        <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
+                            <h3 className="text-sm font-mono tracking-widest uppercase text-zinc-400">Most_Analyzed</h3>
                         </div>
                         <div className="space-y-0">
                             {(topExtensions || []).length === 0 ? (
-                                <p className="text-xs text-slate-500 py-4 text-center">No extensions analyzed yet</p>
+                                <p className="text-xs font-mono text-zinc-500 py-4 text-center">No_Extensions_Found</p>
                             ) : (
                                 (topExtensions || []).slice(0, 5).map((ext, i) => (
                                     <motion.div
@@ -223,20 +221,22 @@ export const DashboardPage: React.FC = () => {
                                         variants={fadeUp}
                                         initial="hidden"
                                         animate="visible"
-                                        className="flex items-center justify-between py-3 border-b border-slate-700/30 last:border-0"
+                                        className="flex items-center justify-between py-3 border-b border-white/5 last:border-0"
                                     >
                                         <div className="flex items-center gap-3 min-w-0">
                                             {ext.icon ? (
-                                                <img src={ext.icon} alt="" className="w-6 h-6 rounded" />
+                                                <img src={ext.icon} alt="" className="w-6 h-6 rounded border border-white/10" />
                                             ) : (
-                                                <Shield size={16} className="text-slate-500" />
+                                                <div className="w-6 h-6 flex items-center justify-center bg-black/40 border border-white/5 rounded">
+                                                    <Shield size={12} className="text-zinc-500" />
+                                                </div>
                                             )}
                                             <div className="min-w-0">
-                                                <p className="text-sm font-medium text-white truncate">{ext.name || ext.extensionId}</p>
-                                                <p className="font-mono text-xs text-slate-500">{ext.scanCount} scans</p>
+                                                <p className="text-sm font-medium text-zinc-200 truncate">{ext.name || ext.extensionId}</p>
+                                                <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">{ext.scanCount}_SCANS</p>
                                             </div>
                                         </div>
-                                        <span className={`font-mono text-sm font-bold ${scoreColor(ext.score)}`}>
+                                        <span className={`font-mono text-sm font-bold ${scoreColor(ext.score)} bg-black/40 px-2 py-0.5 rounded border border-white/5`}>
                                             {ext.score}
                                         </span>
                                     </motion.div>
@@ -250,33 +250,32 @@ export const DashboardPage: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5 }}
-                        className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5"
+                        className="bg-zinc-900/40 border border-white/5 rounded p-5 shadow-sm"
                     >
-                        <div className="flex items-center gap-2 mb-5">
-                            <ShieldAlert size={16} className="text-amber-400" />
-                            <h3 className="text-sm font-semibold text-white">Score Overview</h3>
+                        <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
+                            <h3 className="text-sm font-mono tracking-widest uppercase text-zinc-400">Score_Overview</h3>
                         </div>
                         <div className="flex items-baseline gap-1 mb-4">
-                            <span className={`font-mono text-5xl font-bold ${scoreColor(stats.averageScore)}`}>
+                            <span className={`font-display tracking-tight text-5xl font-bold ${scoreColor(stats.averageScore)}`}>
                                 {stats.averageScore}
                             </span>
-                            <span className="font-mono text-lg text-slate-500">/100</span>
+                            <span className="font-mono text-lg text-zinc-600">/100</span>
                         </div>
-                        <p className="text-sm text-slate-400 mb-6">
-                            Average trust score across {stats.totalScans} scans
+                        <p className="text-xs font-mono tracking-widest uppercase text-zinc-500 mb-6">
+                            AVG OVER {stats.totalScans} SCANS
                         </p>
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-xs">
-                                <span className="text-slate-400">High Risk Scans</span>
-                                <span className="text-red-400 font-mono">{rd.critical + rd.high}</span>
+                        <div className="space-y-3 font-mono text-xs tracking-widest uppercase">
+                            <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                                <span className="text-zinc-500">High Risk </span>
+                                <span className="text-red-400">{rd.critical + rd.high}</span>
                             </div>
-                            <div className="flex justify-between text-xs">
-                                <span className="text-slate-400">Safe Scans</span>
-                                <span className="text-green-400 font-mono">{rd.low}</span>
+                            <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                                <span className="text-zinc-500">Safe Scans</span>
+                                <span className="text-green-400">{rd.low}</span>
                             </div>
-                            <div className="flex justify-between text-xs">
-                                <span className="text-slate-400">Unique Extensions</span>
-                                <span className="text-white font-mono">{stats.uniqueExtensions}</span>
+                            <div className="flex justify-between items-center">
+                                <span className="text-zinc-500">Unique</span>
+                                <span className="text-zinc-300">{stats.uniqueExtensions}</span>
                             </div>
                         </div>
                     </motion.div>
@@ -289,31 +288,28 @@ export const DashboardPage: React.FC = () => {
                     viewport={{ once: true }}
                 >
                     <div className="flex items-center justify-between mb-5">
-                        <h2 className="text-lg font-bold text-white">Recent Scans</h2>
+                        <h2 className="text-lg font-display tracking-tight font-bold text-zinc-100">Scan_History.log</h2>
                         {(recentScans || []).length > 0 && (
-                            <span className="bg-slate-800/70 border border-slate-700/50 rounded-md px-3 py-1.5 font-mono text-xs text-slate-400">
-                                {(recentScans || []).length} scans
+                            <span className="bg-black/40 border border-white/5 rounded px-3 py-1 font-mono text-[10px] tracking-widest uppercase text-zinc-500">
+                                {(recentScans || []).length} ENTRIES
                             </span>
                         )}
                     </div>
 
                     {(recentScans || []).length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-800/50 border border-slate-700/50 rounded-xl">
-                            <Shield size={40} className="text-slate-600 mb-4" strokeWidth={1} />
-                            <p className="text-slate-400 mb-1 font-medium">No scans yet</p>
-                            <p className="text-xs text-slate-500 mb-6">Upload an extension to see results here</p>
+                        <div className="flex flex-col items-center justify-center py-20 text-center bg-zinc-900/40 border border-white/5 rounded shadow-sm">
+                            <p className="font-mono text-zinc-500 mb-6 text-sm">NO_DATA_AVAILABLE</p>
                             <button
                                 onClick={() => navigate('/upload')}
-                                className="group bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition-all flex items-center gap-2"
+                                className="group bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs tracking-widest uppercase px-6 py-2.5 rounded transition-all flex items-center gap-2"
                             >
-                                Upload & Analyze
-                                <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                                Initiate_Scan
                             </button>
                         </div>
                     ) : (
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+                        <div className="bg-zinc-900/40 border border-white/5 rounded shadow-sm overflow-hidden">
                             {/* Table header */}
-                            <div className="grid grid-cols-[1fr_80px_100px_120px] md:grid-cols-[1fr_80px_100px_120px] gap-4 px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-700/40">
+                            <div className="grid grid-cols-[1fr_80px_100px_120px] md:grid-cols-[1fr_80px_100px_120px] gap-4 px-5 py-3 text-[10px] font-mono font-semibold text-zinc-500 uppercase tracking-widest border-b border-white/5 bg-black/20">
                                 <span>Extension</span>
                                 <span>Score</span>
                                 <span>Risk</span>
@@ -328,26 +324,29 @@ export const DashboardPage: React.FC = () => {
                                     initial="hidden"
                                     whileInView="visible"
                                     viewport={{ once: true }}
-                                    className="grid grid-cols-[1fr_80px_100px_120px] md:grid-cols-[1fr_80px_100px_120px] gap-4 px-5 py-3 items-center border-b border-slate-700/30 last:border-0 hover:bg-slate-700/20 transition-colors"
+                                    className="grid grid-cols-[1fr_80px_100px_120px] md:grid-cols-[1fr_80px_100px_120px] gap-4 px-5 py-3 items-center border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors cursor-pointer group"
+                                    onClick={() => navigate(`/scan/${scan.extensionId}`)}
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
                                         {scan.icon ? (
-                                            <img src={scan.icon} alt="" className="w-5 h-5 rounded" />
+                                            <img src={scan.icon} alt="" className="w-6 h-6 rounded border border-white/10" />
                                         ) : (
-                                            <Shield size={14} className="text-slate-500 shrink-0" />
+                                            <div className="w-6 h-6 flex items-center justify-center bg-black/40 border border-white/5 rounded text-zinc-600 text-[10px] font-mono">EXT</div>
                                         )}
-                                        <span className="font-medium text-sm text-white truncate">
+                                        <span className="font-medium text-sm text-zinc-200 truncate group-hover:text-blue-400 transition-colors">
                                             {scan.name || scan.extensionId}
                                         </span>
                                     </div>
                                     <span className={`font-mono text-sm font-bold ${scoreColor(scan.score)}`}>
                                         {scan.score}
                                     </span>
-                                    <span className={`inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full border ${riskBadge(scan.riskLevel)}`}>
-                                        {scan.riskLevel}
-                                    </span>
-                                    <span className="font-mono text-[13px] text-slate-500">
-                                        {new Date(scan.scannedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    <div>
+                                        <span className={`inline-flex items-center font-mono text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded border bg-black/20 ${riskBadge(scan.riskLevel)}`}>
+                                            {scan.riskLevel}
+                                        </span>
+                                    </div>
+                                    <span className="font-mono text-xs text-zinc-500">
+                                        {new Date(scan.scannedAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                                     </span>
                                 </motion.div>
                             ))}
