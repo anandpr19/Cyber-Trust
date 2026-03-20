@@ -98,6 +98,32 @@ export const scanExtension = async (req: Request, res: Response): Promise<void> 
 
       if (cachedResult && force !== 'true' && force !== true) {
         console.log('📦 Returning cached result (scanned within 24 hours)');
+
+        // If cached result has no AI analysis, try to generate one now
+        let cachedAI = (cachedResult as any).aiAnalysis || null;
+        if (!cachedAI) {
+          console.log('🤖 Cached result missing AI analysis, running now...');
+          const cachedName = cachedResult.name || cachedResult.manifest?.name || 'Unknown';
+          cachedAI = await analyzeWithAI(
+            cachedResult.manifest || {},
+            cachedResult.findings || [],
+            (cachedResult as any).storeMetadata || null,
+            cachedName
+          );
+          // Update the DB record with the AI analysis
+          if (cachedAI) {
+            try {
+              await Extension.updateOne(
+                { _id: cachedResult._id },
+                { $set: { aiAnalysis: cachedAI } }
+              );
+              console.log('💾 Updated cached record with AI analysis');
+            } catch (updateErr) {
+              console.warn('⚠️ Failed to update cached AI analysis in DB');
+            }
+          }
+        }
+
         res.status(200).json({
           success: true,
           cached: true,
@@ -112,7 +138,7 @@ export const scanExtension = async (req: Request, res: Response): Promise<void> 
             embeddedUrls: (cachedResult as any).embeddedUrls || [],
           },
           storeMetadata: (cachedResult as any).storeMetadata || null,
-          aiAnalysis: (cachedResult as any).aiAnalysis || null,
+          aiAnalysis: cachedAI,
           savedToDb: true,
           lastScanned: cachedResult.scannedAt,
           timestamp: new Date().toISOString()
